@@ -1,0 +1,5 @@
+name: PlasmaHub
+main: me.yeroc.PlasmaHub.Main
+author: [TheManiacGamers]
+version: 1.0
+api-version: 1.13
