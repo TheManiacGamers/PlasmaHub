@@ -4,6 +4,7 @@ import com.sk89q.minecraft.util.commands.ChatColor;
 import com.sk89q.minecraft.util.commands.Command;
 import com.sk89q.minecraft.util.commands.CommandContext;
 import com.sk89q.minecraft.util.commands.CommandNumberFormatException;
+import me.ryandw11.ultrabar.api.UltraBarAPI;
 import me.yeroc.PlasmaHub.managers.Configs;
 import me.yeroc.PlasmaHub.managers.PermissionsManager;
 import me.yeroc.PlasmaHub.managers.PlayerFileManager;
@@ -16,6 +17,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -71,6 +74,12 @@ public class Commands {
 
     }
 
+//    @Command(aliases = "thebar", desc = "Initiate the bar")
+//    public void onBar(CommandContext args, CommandSender sender) {
+//        Player p = (Player) sender;
+//        UltraBarAPI bapi = new UltraBarAPI();
+//        bapi.sendBossBar(p, "" + pfm.getLevel(p), BarColor.BLUE, BarStyle.SOLID, 60, 1);
+//    }
 
     @Command(aliases = "gmc", desc = "Change to creative mode.")
     public void onGMC(CommandContext args, CommandSender sender) {
@@ -286,6 +295,28 @@ public class Commands {
                     if (api.isPlayer(sender)) {
                         Player p = (Player) sender;
                         sendHelp(p, 1);
+                    } else {
+                        sender.sendMessage(strings.getMessage("mustBePlayer"));
+                    }
+                    return;
+                }
+                if (args.getString(0).equalsIgnoreCase("bar")) {
+                    if (api.isPlayer(sender)) {
+                        if (sender.hasPermission(perms.plasma_command_bar)) {
+                            Player p = (Player) sender;
+                            if (Main.barEnabled.get(p.getUniqueId()) == null) {
+                                Main.barEnabled.put(p.getUniqueId(), "no");
+                            }
+                            if (Main.barEnabled.get(p.getUniqueId()).equalsIgnoreCase("yes")) {
+                                Main.barEnabled.put(p.getUniqueId(), "no");
+                                p.sendMessage(strings.getMessage("barToggled") + ChatColor.RED + "OFF");
+                            } else {
+                                Main.barEnabled.put(p.getUniqueId(), "yes");
+                                p.sendMessage(strings.getMessage("barToggled") + ChatColor.GREEN + "ON");
+                            }
+                        } else {
+                            sender.sendMessage(strings.getMessage("noPermission"));
+                        }
                     } else {
                         sender.sendMessage(strings.getMessage("mustBePlayer"));
                     }
@@ -707,4 +738,19 @@ public class Commands {
         }
     }
 
+    @Command(aliases = "clearlag", desc = "Clears entities in your world!")
+    public void onStoplag(CommandContext args, CommandSender sender) {
+        if (sender instanceof Player) {
+            Player p = (Player) sender;
+            if (p.hasPermission(perms.plasma_command_clearlag)) {
+                int entities = p.getLocation().getWorld().getEntities().size();
+                p.getLocation().getWorld().getEntities().clear();
+                p.sendMessage(strings.getMessage("clearingEntities") + entities);
+            } else {
+                sender.sendMessage(strings.getMessage("noPermission"));
+            }
+        } else {
+            sender.sendMessage(strings.getMessage("mustBePlayer"));
+        }
+    }
 }

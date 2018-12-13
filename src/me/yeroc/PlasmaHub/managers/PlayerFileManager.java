@@ -149,6 +149,13 @@ public class PlayerFileManager extends BukkitRunnable {
         Main.pfm_pvpExp.put(p.getUniqueId(), newExp);
     }
 
+    public Integer getGems(Player p) {
+        if (Main.pfm_totalGems.get(p.getUniqueId()) == null) {
+            Main.pfm_totalGems.put(p.getUniqueId(), 10);
+        }
+        return Main.pfm_totalGems.get(p.getUniqueId());
+    }
+
     public void addMoney(Player p, int i) {
         Main.log(strings.getMessage("pfm_addMoneyDisabled") + p.getName() + ".");
     }
@@ -178,9 +185,11 @@ public class PlayerFileManager extends BukkitRunnable {
             Main.pfm_pvpExp.put(p.getUniqueId(), fc.getInt("Statistics.PVPExp"));
             Main.pfm_completedMaze.put(p.getUniqueId(), fc.getString("Completed.Maze"));
             Main.pfm_completedParkour.put(p.getUniqueId(), fc.getString("Completed.Parkour"));
+            Main.barEnabled.put(p.getUniqueId(), fc.getString("Toggled.Bar"));
         } else {
             create(p);
         }
+
     }
 
     public void create(Player p) {
@@ -244,6 +253,7 @@ public class PlayerFileManager extends BukkitRunnable {
         fc.set("Statistics.PVPExp", Main.pfm_pvpExp.get(p.getUniqueId()));
         fc.set("Completed.Maze", Main.pfm_completedMaze.get(p.getUniqueId()));
         fc.set("Completed.Parkour", Main.pfm_completedParkour.get(p.getUniqueId()));
+        fc.set("Toggled.Bar", Main.barEnabled.get(p.getUniqueId()));
 //        fc.set("Rewards.Count", Main.pfm_dailyReward.get(p.getUniqueId()));
 //        fc.set("Rewards.Dates", Main.pfm_dailyRewardDates.get(p.getUniqueId()));
         try {
@@ -296,6 +306,9 @@ public class PlayerFileManager extends BukkitRunnable {
         }
         if (fc.get("Completed.Parkour") == null) {
             fc.set("Completed.Parkour", "no");
+        }
+        if (fc.get("Toggled.Bar") == null) {
+            fc.set("Toggled.Bar", "yes");
         }
 //        if (fc.get("Rewards.Count") == null) {
 //            fc.set("Rewards.Count", 0);

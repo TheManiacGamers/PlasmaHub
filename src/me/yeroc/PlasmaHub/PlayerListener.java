@@ -63,8 +63,8 @@ public class PlayerListener extends BukkitRunnable implements Listener {
     private PlayerFileManager pfm = PlayerFileManager.getInstance();
 
     private World w = Bukkit.getServer().getWorld("world");
-    public String mitchell = ("eee3a024-f05f-45f1-a741-b2938fff4f44");
-    public String corey = ("3d87ff2a-90e9-4e00-acac-1338331b595d");
+    private String mitchell = ("eee3a024-f05f-45f1-a741-b2938fff4f44");
+    private String corey = ("3d87ff2a-90e9-4e00-acac-1338331b595d");
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent e) {
@@ -98,6 +98,8 @@ public class PlayerListener extends BukkitRunnable implements Listener {
         Main.parkour_isInParkour.put(p.getUniqueId(), "no");
         Main.parkour_playerCheckpoints.put(p.getUniqueId(), "zero");
         p.sendMessage(strings.getMessage("server") + ChatColor.RED + " The PlasmaHub plugin's messaging system underwent an overhaul. If you see any message errors, please contact an Owner.");
+        api.updateBar(p);
+
     }
 
     @EventHandler
@@ -812,21 +814,24 @@ public class PlayerListener extends BukkitRunnable implements Listener {
         if (e.getEntityType().equals(EntityType.PLAYER)) {
             if (e.getDamager().getType().equals(EntityType.PLAYER)) {
                 final Player p = (Player) e.getEntity();
-                Player d = (Player) e.getDamager();
+                final Player d = (Player) e.getDamager();
                 if (p.getHealth() - e.getDamage() < 0) {
-                    TitleAPI.sendActionBar(p, strings.getMessage("pvp_killedBy") + d.getName());
+                    TitleAPI.sendActionBar(p, d.getName() + strings.getMessage("pvp_killedBy"));
                     TitleAPI.sendActionBar(d, strings.getMessage("pvp_youKilled") + p.getName());
                     pfm.addKills(d, 1);
                     pfm.addDeaths(p, 1);
-                    checkLevelRankup(p);
+                    checkLevelRankup(d);
                     p.setFireTicks(0);
                     p.setFoodLevel(20);
                     Bukkit.getScheduler().scheduleSyncDelayedTask(Bukkit.getPluginManager().getPlugin("PlasmaHub"), new BukkitRunnable() {
                         @Override
                         public void run() {
                             p.teleport(Main.spawn);
-                            p.getInventory().setHeldItemSlot(7);
-                            p.getInventory().setArmorContents(null);
+                            p.getInventory().setHeldItemSlot(8);
+                            if (!d.getName().equalsIgnoreCase("TheManiacGamers")) {
+                                p.getInventory().setHeldItemSlot(7);
+                                p.getInventory().setArmorContents(null);
+                            }
                             p.setHealth(p.getMaxHealth());
                         }
                     }, 10L);
@@ -993,7 +998,7 @@ public class PlayerListener extends BukkitRunnable implements Listener {
                     return;
                 }
                 if (p.getLocation().getBlock().getRelative(BlockFace.DOWN).getType().equals(Material.AIR)) {
-                    if (!p.getUniqueId().equals(UUID.fromString(mitchell)) || (!p.getUniqueId().equals(UUID.fromString(corey)))) {
+                    if (!(p.getPlayer().getName().equalsIgnoreCase("TheManiacGamers")) || (!(p.getName().equalsIgnoreCase("Rookie1200")))) {
                         p.sendMessage(strings.getMessage("snowball_onFloor"));
                         e.setCancelled(true);
                         return;
@@ -1241,19 +1246,17 @@ public class PlayerListener extends BukkitRunnable implements Listener {
         if (Main.pfm_pvpLevel.get(p.getUniqueId()) == null) {
             Main.pfm_pvpLevel.put(p.getUniqueId(), 0);
         }
+        pfm.takeExp(p, 5);
         if (pfm.getExp(p) == -5) {
             pfm.setExp(p, 0);
-            return;
         }
-        if (pfm.getLevel(p) == 0) {
-            if (pfm.getExp(p) == 0) {
-                pfm.addLevel(p, 1);
-            }
-            pfm.setExp(p, 50);
-//            sc.updateScoreboard(p);
-            return;
-        }
-        pfm.takeExp(p, 5);
+//        if (pfm.getLevel(p) == 0) {
+//            if (pfm.getExp(p) == 0) {
+//                pfm.addLevel(p, 1);
+//            }
+//            pfm.setExp(p, 50);
+////            sc.updateScoreboard(p);
+//        }
         if (pfm.getLevel(p) >= 10 && (!(pfm.getLevel(p) <= 11))) { // LEVEL 0 - 10
             if (pfm.getExp(p) == 0) {
                 pfm.addLevel(p, 1);

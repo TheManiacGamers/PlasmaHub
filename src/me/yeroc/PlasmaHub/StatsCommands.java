@@ -67,8 +67,8 @@ public class StatsCommands {
                     p.sendMessage(strings.getMessage("stats_deaths") + Main.pfm_deaths.get(p.getUniqueId()));
                     p.sendMessage(strings.getMessage("stats_joins") + Main.pfm_joins.get(p.getUniqueId()));
                     p.sendMessage(strings.getMessage("stats_gems") + Main.pfm_totalGems.get(p.getUniqueId()));
-                    p.sendMessage(strings.getMessage("stats_pvplevel") + Main.pfm_pvpLevel.get(p.getUniqueId()));
-                    p.sendMessage(strings.getMessage("stats_pvpexp") + Main.pfm_pvpExp.get(p.getUniqueId()));
+                    p.sendMessage(strings.getMessage("stats_pvpLevel") + Main.pfm_pvpLevel.get(p.getUniqueId()));
+                    p.sendMessage(strings.getMessage("stats_pvpExp") + Main.pfm_pvpExp.get(p.getUniqueId()));
                     getTime(p, Main.pfm_timeOnline.get(p.getUniqueId()));
                     p.sendMessage(strings.getMessage("stats_1") + p.getUniqueId() + strings.getMessage("stats_2"));
                 } else {

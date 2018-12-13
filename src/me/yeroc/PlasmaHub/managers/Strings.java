@@ -172,6 +172,7 @@ public class Strings {
     private String stats_pvpLevel = ("§aPVP Level: §c");
     private String stats_expLevel = ("§aExp Level: §c");
     private String pluginDisabled = ("{SERVER}§cThe plugin is currently disabled.");
+    private String clearingEntities = ("{SERVER}§aClearing entities in the world: ");
 
     // prefix: text
     public String getMessage(String message) {
@@ -422,6 +423,7 @@ public class Strings {
             configs.getMessages().set("Messages.pvpLevel", stats_pvpLevel);
             configs.getMessages().set("Messages.expLevel", stats_expLevel);
             configs.getMessages().set("Messages.pluginDisabled", pluginDisabled);
+            configs.getMessages().set("Messags.clearingEntities", clearingEntities);
             configs.saveMessages();
         }
         for (String s : configs.getMessages().getStringList("Messages")) {
@@ -1203,6 +1205,16 @@ public class Strings {
                     configs.getMessages().set("Messages." + s, pluginDisabled);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, pluginDisabled);
+                }
+                if (s.equalsIgnoreCase("clearingEntities")) {
+                    configs.getMessages().set("Messages." + s, clearingEntities);
+                    Main.log("Set default for: " + s + ".");
+                    Main.messages.put(s, clearingEntities);
+                }
+                if (s.equalsIgnoreCase("reloading")) {
+                    configs.getMessages().set("Messages." + s, reloading);
+                    Main.log("Set default for: " + s + ".");
+                    Main.messages.put(s, reloading);
                 }
             }
         }

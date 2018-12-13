@@ -1,18 +1,24 @@
 package me.yeroc.PlasmaHub.utils;
 
 import com.sk89q.minecraft.util.commands.ChatColor;
+import me.ryandw11.ultrabar.api.UltraBarAPI;
 import me.yeroc.PlasmaHub.Main;
 import me.yeroc.PlasmaHub.PlayerListener;
 import me.yeroc.PlasmaHub.gadgets.GadgetsMenu;
 import me.yeroc.PlasmaHub.managers.PermissionsManager;
+import me.yeroc.PlasmaHub.managers.PlayerFileManager;
 import me.yeroc.PlasmaHub.managers.Strings;
 import me.yeroc.PlasmaHub.serverselector.ServerSelector;
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,12 +26,12 @@ import java.util.List;
 /**
  * Created by Corey on 28/11/2018.
  */
-public class API {
+public class API extends BukkitRunnable {
 
     private static API instance = new API();
     private Main plugin;
 
-    private API() {
+    public API() {
 
     }
 
@@ -38,6 +44,7 @@ public class API {
     private GadgetsMenu gadgets = GadgetsMenu.getInstance();
     private PlayerListener playerListener = PlayerListener.getInstance();
     private PermissionsManager perms = PermissionsManager.getInstance();
+    private PlayerFileManager pfm = PlayerFileManager.getInstance();
 
     public boolean isPlayer(CommandSender sender) {
         return sender instanceof Player;
@@ -138,6 +145,7 @@ public class API {
         Main.maze_isInMaze.put(p.getUniqueId(), "no");
         Main.kotl_playerInRegion.put(p.getUniqueId(), "no");
         Main.kotl_toldInRegion.put(p.getUniqueId(), "no");
+        Main.barProgress.put(p.getUniqueId(), 0);
     }
 
     private void addSword(Player p) {
@@ -202,4 +210,58 @@ public class API {
         p.getInventory().setItem(0, Compass);
     }
 
+    public void run() {
+        if (Bukkit.getServer().getOnlinePlayers().size() != 0) {
+            for (Player p : Bukkit.getOnlinePlayers()) {
+                if (Main.barEnabled.get(p.getUniqueId()) == null) {
+                    Main.barEnabled.put(p.getUniqueId(), "yes");
+                }
+                if (Main.barEnabled.get(p.getUniqueId()).equalsIgnoreCase("yes")) {
+                    p.setPlayerListHeader("                           ");
+                    p.setPlayerListFooter(strings.getMessage("PlasmaNetwork"));
+                    updateBar(p);
+                } else {
+                    p.setPlayerListHeader(strings.getMessage("PlasmaNetwork"));
+                    p.setPlayerListFooter(ChatColor.GREEN + "HUB");
+                }
+            }
+        }
+
+    }
+
+    public void updateBar(Player p) {
+        UltraBarAPI bapi = new UltraBarAPI();
+
+        if (Main.barProgress.get(p.getUniqueId()) == null) {
+            Main.barProgress.put(p.getUniqueId(), 0);
+        }
+        if (Main.barProgress.get(p.getUniqueId()) >= 4) {
+            Main.barProgress.put(p.getUniqueId(), 0);
+        }
+        int i = Main.barProgress.get(p.getUniqueId());
+        int newI = i + 1;
+        Main.barProgress.put(p.getUniqueId(), newI);
+        if (i == 0) {
+            bapi.sendBossBar(p, ChatColor.GREEN + "Your Kills: " + pfm.getKills(p), BarColor.BLUE, BarStyle.SOLID, 3, 1);
+            return;
+        }
+        if (i == 1) {
+            bapi.sendBossBar(p, ChatColor.GREEN + "Your Deaths: " + pfm.getDeaths(p), BarColor.GREEN, BarStyle.SOLID, 3, 1);
+            return;
+        }
+        if (i == 2) {
+            bapi.sendBossBar(p, ChatColor.GREEN + "Your Joins: " + pfm.getJoins(p), BarColor.PURPLE, BarStyle.SOLID, 3, 1);
+            return;
+        }
+        if (i == 3) {
+            bapi.sendBossBar(p, ChatColor.GREEN + "Your Gems: " + pfm.getGems(p), BarColor.RED, BarStyle.SOLID, 3, 1);
+            return;
+        }
+        if (i == 4) {
+            bapi.sendBossBar(p, ChatColor.GREEN + "Your PVP Level: " + pfm.getLevel(p), BarColor.YELLOW, BarStyle.SOLID, 3, 1);
+            return;
+        }
+        i = 0;
+        Main.barProgress.put(p.getUniqueId(), i);
+    }
 }

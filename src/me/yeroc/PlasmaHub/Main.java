@@ -3,6 +3,7 @@ package me.yeroc.PlasmaHub;
 import com.sk89q.bukkit.util.CommandsManagerRegistration;
 import com.sk89q.minecraft.util.commands.ChatColor;
 import com.sk89q.minecraft.util.commands.*;
+import me.ryandw11.ultrabar.api.UltraBarAPI;
 import me.yeroc.PlasmaHub.listeners.LaunchPads;
 import me.yeroc.PlasmaHub.listeners.WorldListener;
 import me.yeroc.PlasmaHub.managers.Configs;
@@ -16,6 +17,10 @@ import me.yeroc.PlasmaHub.utils.rewards.RewardsManager;
 import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.*;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarFlag;
+import org.bukkit.boss.BarStyle;
+import org.bukkit.boss.BossBar;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
@@ -116,6 +121,8 @@ public class Main extends JavaPlugin implements Listener {
     public static Integer autoBroadcastTime = 0;
     public static List<String> autoBroadcastMessages = new ArrayList<>();
     public static HashMap<UUID, String> scoreboardEnabled = new HashMap<>();
+    public static HashMap<UUID, String> barEnabled = new HashMap<>();
+    public static HashMap<UUID, Integer> barProgress = new HashMap<>();
 
     public static HashMap<String, String> messages = new HashMap<>();
 
@@ -214,6 +221,8 @@ public class Main extends JavaPlugin implements Listener {
                         }
                     }, 100L);
                 }
+                p.setPlayerListHeader("                           ");
+                p.setPlayerListFooter(strings.getMessage("PlasmaNetwork"));
             }
             Bukkit.broadcastMessage(strings.getMessage("serverReloaded"));
         }
@@ -241,6 +250,7 @@ public class Main extends JavaPlugin implements Listener {
         configs.saveConfig();
     }
 
+
     public HashMap<Server, String> getReloadConfirmed() {
         return reloadConfirmed;
     }
@@ -262,6 +272,8 @@ public class Main extends JavaPlugin implements Listener {
         new me.yeroc.PlasmaHub.PlayerListener(this).runTaskTimer(this, 0L, 20L);
         new me.yeroc.PlasmaHub.managers.PlayerFileManager(this).runTaskTimer(this, 0L, 20L);
         new me.yeroc.PlasmaHub.AutoBroadcast().runTaskTimer(this, 0L, autoBroadcastTime * 20 * 60);
+//        new me.yeroc.PlasmaHub.managers.Scoreboard().runTaskTimer(this, 0L, 20L);
+        new me.yeroc.PlasmaHub.utils.API().runTaskTimer(this, 0L, 65L);
         Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
             @Override
             public void run() {
