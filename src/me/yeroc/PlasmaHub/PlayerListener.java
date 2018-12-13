@@ -12,6 +12,7 @@ import me.yeroc.PlasmaHub.utils.TitleAPI.TitleAPI;
 import me.yeroc.PlasmaHub.utils.rewards.GemsManager;
 import me.yeroc.PlasmaHub.utils.rewards.RewardsManager;
 import org.bukkit.*;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.type.Stairs;
@@ -28,6 +29,8 @@ import org.bukkit.event.player.*;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -99,8 +102,10 @@ public class PlayerListener extends BukkitRunnable implements Listener {
         Main.parkour_playerCheckpoints.put(p.getUniqueId(), "zero");
         p.sendMessage(strings.getMessage("server") + ChatColor.RED + " The PlasmaHub plugin's messaging system underwent an overhaul. If you see any message errors, please contact an Owner.");
         api.updateBar(p);
+        api.applyAttackSpeed(p);
 
     }
+
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent e) {
@@ -750,7 +755,6 @@ public class PlayerListener extends BukkitRunnable implements Listener {
         }
     }
 
-
     // DOUBLE JUMP
     @EventHandler
     public void onPlayerToggleFlight(PlayerToggleFlightEvent event) {
@@ -815,26 +819,36 @@ public class PlayerListener extends BukkitRunnable implements Listener {
             if (e.getDamager().getType().equals(EntityType.PLAYER)) {
                 final Player p = (Player) e.getEntity();
                 final Player d = (Player) e.getDamager();
+                if (d.getName().equals("TheManiacGamers")) {
+                    p.getInventory().setHeldItemSlot(8);
+                }
                 if (p.getHealth() - e.getDamage() < 0) {
+                    e.setCancelled(true);
+                    p.teleport(Main.spawn);
                     TitleAPI.sendActionBar(p, d.getName() + strings.getMessage("pvp_killedBy"));
                     TitleAPI.sendActionBar(d, strings.getMessage("pvp_youKilled") + p.getName());
                     pfm.addKills(d, 1);
                     pfm.addDeaths(p, 1);
-                    checkLevelRankup(d);
+                    pfm.addDeathStreak(p, 1);
+                    pfm.addCurrentKillstreak(d, 1);
+                    pfm.removeCurrentKillstreak(p);
+                    if (pfm.getCurrentKillstreak(d) >= pfm.getLongestKillstreak(d) + 1) {
+                        Main.pfm_longestKillstreak.put(d.getUniqueId(), Main.pfm_killstreak.get(d.getUniqueId()));
+                        TitleAPI.sendActionBar(d, ChatColor.AQUA + "New longest Killstreak of " + pfm.getCurrentKillstreak(d) + "!");
+                    }
+                    checkEnterDomination(d);
+                    checkEnterRage(p);
                     p.setFireTicks(0);
                     p.setFoodLevel(20);
-                    Bukkit.getScheduler().scheduleSyncDelayedTask(Bukkit.getPluginManager().getPlugin("PlasmaHub"), new BukkitRunnable() {
-                        @Override
-                        public void run() {
-                            p.teleport(Main.spawn);
-                            p.getInventory().setHeldItemSlot(8);
-                            if (!d.getName().equalsIgnoreCase("TheManiacGamers")) {
-                                p.getInventory().setHeldItemSlot(7);
-                                p.getInventory().setArmorContents(null);
-                            }
-                            p.setHealth(p.getMaxHealth());
-                        }
-                    }, 10L);
+                    for (PotionEffect effect : p.getActivePotionEffects()) {
+                        p.removePotionEffect(effect.getType());
+                    }
+                    if (!d.getName().equalsIgnoreCase("TheManiacGamers")) {
+                        p.getInventory().setHeldItemSlot(7);
+                        p.getInventory().setArmorContents(null);
+                    }
+                    p.setHealth(p.getMaxHealth());
+                    checkLevelRankup(d);
                     return;
                 }
                 if (!(Main.kotl_playersInRegion.contains(p.getUniqueId()))) {
@@ -913,10 +927,10 @@ public class PlayerListener extends BukkitRunnable implements Listener {
             if (!p.getGameMode().equals(GameMode.CREATIVE)) {
                 e.setCancelled(true);
             }
-            if (p.getOpenInventory().getBottomInventory().getType().equals(InventoryType.PLAYER)) {
-                if (!p.getGameMode().equals(GameMode.CREATIVE)) {
-                    e.setCancelled(true);
-                }
+        }
+        if (p.getOpenInventory().getBottomInventory().getType().equals(InventoryType.PLAYER)) {
+            if (!p.getGameMode().equals(GameMode.CREATIVE)) {
+                e.setCancelled(true);
             }
         }
     }
@@ -1257,7 +1271,7 @@ public class PlayerListener extends BukkitRunnable implements Listener {
 //            pfm.setExp(p, 50);
 ////            sc.updateScoreboard(p);
 //        }
-        if (pfm.getLevel(p) >= 10 && (!(pfm.getLevel(p) <= 11))) { // LEVEL 0 - 10
+        if (pfm.getLevel(p) <= 10 && (!(pfm.getLevel(p) >= 11))) { // LEVEL 0 - 10
             if (pfm.getExp(p) == 0) {
                 pfm.addLevel(p, 1);
                 pfm.setExp(p, 50); // 10 kills each level
@@ -1267,7 +1281,7 @@ public class PlayerListener extends BukkitRunnable implements Listener {
             }
             return;
         }
-        if (!(pfm.getLevel(p) >= 10) && pfm.getLevel(p) >= 11 && (!(pfm.getLevel(p) >= 16))) { // LEVEL 11 - 15
+        if (!(pfm.getLevel(p) <= 10) && pfm.getLevel(p) >= 11 && (!(pfm.getLevel(p) >= 16))) { // LEVEL 11 - 15
             if (pfm.getExp(p) == 0) {
                 pfm.addLevel(p, 1);
                 pfm.setExp(p, 100); // 20 kills each level
@@ -1277,7 +1291,7 @@ public class PlayerListener extends BukkitRunnable implements Listener {
             }
             return;
         }
-        if (!(pfm.getLevel(p) >= 15) && pfm.getLevel(p) >= 16 && (!(pfm.getLevel(p) >= 21))) { // LEVEL 16-20
+        if (!(pfm.getLevel(p) <= 15) && pfm.getLevel(p) >= 16 && (!(pfm.getLevel(p) >= 21))) { // LEVEL 16-20
             if (pfm.getExp(p) == 0) {
                 pfm.addLevel(p, 1);
                 pfm.setExp(p, 150); // 30 kills each level
@@ -1287,7 +1301,7 @@ public class PlayerListener extends BukkitRunnable implements Listener {
             }
             return;
         }
-        if (!(pfm.getLevel(p) >= 20) && pfm.getLevel(p) >= 21 && (!(pfm.getLevel(p) >= 26))) { // LEVEL 21-25
+        if (!(pfm.getLevel(p) <= 20) && pfm.getLevel(p) >= 21 && (!(pfm.getLevel(p) >= 26))) { // LEVEL 21-25
             if (pfm.getExp(p) == 0) {
                 pfm.addLevel(p, 1);
                 pfm.setExp(p, 250); // 50 kills each level
@@ -1302,7 +1316,7 @@ public class PlayerListener extends BukkitRunnable implements Listener {
             }
             return;
         }
-        if (!(pfm.getLevel(p) >= 25) && pfm.getLevel(p) >= 26 && (!(pfm.getLevel(p) >= 31))) { // LEVEL 26-30
+        if (!(pfm.getLevel(p) <= 25) && pfm.getLevel(p) >= 26 && (!(pfm.getLevel(p) >= 31))) { // LEVEL 26-30
             if (pfm.getExp(p) == 0) {
                 pfm.addLevel(p, 1);
                 pfm.setExp(p, 300); // 60 kills each level
@@ -1312,7 +1326,7 @@ public class PlayerListener extends BukkitRunnable implements Listener {
             }
             return;
         }
-        if (!(pfm.getLevel(p) >= 30) && pfm.getLevel(p) >= 31 && (!(pfm.getLevel(p) >= 41))) { // LEVEL 31-40
+        if (!(pfm.getLevel(p) <= 30) && pfm.getLevel(p) >= 31 && (!(pfm.getLevel(p) >= 41))) { // LEVEL 31-40
             if (pfm.getExp(p) == 0) {
                 pfm.addLevel(p, 1);
                 pfm.setExp(p, 375); // 75 kills each level
@@ -1322,7 +1336,7 @@ public class PlayerListener extends BukkitRunnable implements Listener {
             }
             return;
         }
-        if (!(pfm.getLevel(p) >= 40) && pfm.getLevel(p) >= 41 && (!(pfm.getLevel(p) >= 51))) { // LEVEL 41-50
+        if (!(pfm.getLevel(p) <= 40) && pfm.getLevel(p) >= 41 && (!(pfm.getLevel(p) >= 51))) { // LEVEL 41-50
             if (pfm.getExp(p) == 0) {
                 pfm.addLevel(p, 1);
                 pfm.setExp(p, 500); // 100 kills each level
@@ -1337,7 +1351,7 @@ public class PlayerListener extends BukkitRunnable implements Listener {
             }
             return;
         }
-        if (!(pfm.getLevel(p) >= 50) && pfm.getLevel(p) >= 51 && (!(pfm.getLevel(p) >= 76))) { // LEVEL 51-75
+        if (!(pfm.getLevel(p) <= 50) && pfm.getLevel(p) >= 51 && (!(pfm.getLevel(p) >= 76))) { // LEVEL 51-75
             if (pfm.getExp(p) == 0) {
                 pfm.addLevel(p, 1);
                 pfm.setExp(p, 625); // 125 kills each level
@@ -1352,7 +1366,7 @@ public class PlayerListener extends BukkitRunnable implements Listener {
             }
             return;
         }
-        if (!(pfm.getLevel(p) >= 75) && pfm.getLevel(p) >= 76 && (!(pfm.getLevel(p) >= 91))) { // LEVEL 76-90
+        if (!(pfm.getLevel(p) <= 75) && pfm.getLevel(p) >= 76 && (!(pfm.getLevel(p) >= 91))) { // LEVEL 76-90
             if (pfm.getExp(p) == 0) {
                 pfm.addLevel(p, 1);
                 pfm.setExp(p, 750); // 150 kills each level
@@ -1362,7 +1376,7 @@ public class PlayerListener extends BukkitRunnable implements Listener {
             }
             return;
         }
-        if (!(pfm.getLevel(p) >= 90) && pfm.getLevel(p) >= 91 && (!(pfm.getLevel(p) >= 96))) { // LEVEL 91-95
+        if (!(pfm.getLevel(p) <= 90) && pfm.getLevel(p) >= 91 && (!(pfm.getLevel(p) >= 96))) { // LEVEL 91-95
             if (pfm.getExp(p) == 0) {
                 pfm.addLevel(p, 1);
                 pfm.setExp(p, 875); // 175 kills each level
@@ -1372,7 +1386,7 @@ public class PlayerListener extends BukkitRunnable implements Listener {
             }
             return;
         }
-        if (!(pfm.getLevel(p) >= 90) && pfm.getLevel(p) >= 91 && (!(pfm.getLevel(p) >= 96))) { // LEVEL 95-99
+        if (!(pfm.getLevel(p) <= 90) && pfm.getLevel(p) >= 91 && (!(pfm.getLevel(p) >= 96))) { // LEVEL 95-99
             if (pfm.getExp(p) == 0) {
                 pfm.addLevel(p, 1);
                 pfm.setExp(p, 1000); // 200 kills each level
@@ -1382,7 +1396,7 @@ public class PlayerListener extends BukkitRunnable implements Listener {
             }
             return;
         }
-        if (!(pfm.getLevel(p) >= 99) && pfm.getLevel(p) >= 100 && (!(pfm.getLevel(p) >= 101))) { // LEVEL 100
+        if (!(pfm.getLevel(p) <= 99) && pfm.getLevel(p) >= 100 && (!(pfm.getLevel(p) >= 101))) { // LEVEL 100
             if (pfm.getExp(p) == 0) {
                 pfm.setExp(p, 1500); // 300 kills
                 sendMessageLevelRankup(p);
@@ -1396,8 +1410,35 @@ public class PlayerListener extends BukkitRunnable implements Listener {
 
     private void sendMessageLevelRankup(Player p) {
         p.sendMessage(strings.getMessage("pfm_pvpLevelUp"));
-        p.sendMessage(strings.getMessage("pfm_pvpnewLevel") + pfm.getLevel(p));
+        p.sendMessage(strings.getMessage("pfm_pvpNewLevel") + pfm.getLevel(p));
 //        p.sendMessage(strings.getMessage("defaultMsgs + "You have gained $5, 5 Strength and 5 Chat Credits!");
     }
 
+    private void checkEnterDomination(Player p) {
+        if (Main.pfm_killstreak.get(p.getUniqueId()) % 7 == 0) {
+            for (Player on : Bukkit.getOnlinePlayers()) {
+                if (on.getItemInHand().getType().equals(Material.DIAMOND_SWORD)) {
+                    on.sendMessage(strings.getMessage("prefix") + ChatColor.RED + p.getName() + ChatColor.DARK_RED + " is dominating!");
+                }
+            }
+            p.addPotionEffect(PotionEffectType.REGENERATION.createEffect(300, 3));
+            p.addPotionEffect(PotionEffectType.SPEED.createEffect(300, 3));
+            p.addPotionEffect(PotionEffectType.HEALTH_BOOST.createEffect(300, 3));
+            p.addPotionEffect(PotionEffectType.GLOWING.createEffect(Integer.MAX_VALUE, 3));
+        }
+    }
+
+    private void checkEnterRage(Player p) {
+        if (Main.pfm_deathstreak.get(p.getUniqueId()) % 7 == 0) {
+            for (Player on : Bukkit.getOnlinePlayers()) {
+                if (on.getItemInHand().getType().equals(Material.DIAMOND_SWORD)) {
+                    on.sendMessage(strings.getMessage("prefix") + ChatColor.RED + p.getName() + ChatColor.AQUA + " is getting totally wrecked!");
+                }
+            }
+            p.addPotionEffect(PotionEffectType.REGENERATION.createEffect(300, 3));
+            p.addPotionEffect(PotionEffectType.SPEED.createEffect(300, 3));
+            p.addPotionEffect(PotionEffectType.JUMP.createEffect(300, 3));
+            p.addPotionEffect(PotionEffectType.HEALTH_BOOST.createEffect(300, 3));
+        }
+    }
 }

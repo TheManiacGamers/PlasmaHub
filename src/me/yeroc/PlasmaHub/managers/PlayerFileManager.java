@@ -164,8 +164,45 @@ public class PlayerFileManager extends BukkitRunnable {
         Main.log(strings.getMessage("pfm_addStrengthDisabled") + p.getName() + ".");
     }
 
+    public Integer getCurrentKillstreak(Player p) {
+        if (Main.pfm_killstreak.get(p.getUniqueId()) == null) {
+            Main.pfm_killstreak.put(p.getUniqueId(), 0);
+        }
+        return Main.pfm_killstreak.get(p.getUniqueId());
+    }
+
+    public Integer getLongestKillstreak(Player p) {
+        if (Main.pfm_longestKillstreak.get(p.getUniqueId()) == null) {
+            Main.pfm_longestKillstreak.put(p.getUniqueId(), 0);
+        }
+        return Main.pfm_longestKillstreak.get(p.getUniqueId());
+    }
+
+    public void removeCurrentKillstreak(Player p) {
+        Main.pfm_killstreak.put(p.getUniqueId(), 0);
+    }
+
+    public void addCurrentKillstreak(Player p, int a) {
+        Main.pfm_killstreak.put(p.getUniqueId(), Main.pfm_killstreak.get(p.getUniqueId()) + a);
+    }
+
+    public void addLongestKillstreak(Player p, int a) {
+        Main.pfm_longestKillstreak.put(p.getUniqueId(), Main.pfm_longestKillstreak.get(p.getUniqueId()));
+    }
+
     public Integer getTimeOnline(Player p) {
         return Main.pfm_timeOnline.get(p.getUniqueId());
+    }
+
+    public void addDeathStreak(Player p, int a) {
+        Main.pfm_deathstreak.put(p.getUniqueId(), Main.pfm_deathstreak.get(p.getUniqueId()) + 1);
+    }
+
+    public Integer getDeathStreak(Player p) {
+        if (Main.pfm_deathstreak.get(p.getUniqueId()) == null) {
+            Main.pfm_deathstreak.put(p.getUniqueId(), 0);
+        }
+        return Main.pfm_deathstreak.get(p.getUniqueId());
     }
 
     public void load(Player p) {
@@ -183,6 +220,9 @@ public class PlayerFileManager extends BukkitRunnable {
             Main.pfm_timeOnline.put(p.getUniqueId(), fc.getInt("Statistics.Time Online"));
             Main.pfm_pvpLevel.put(p.getUniqueId(), fc.getInt("Statistics.PVPLevel"));
             Main.pfm_pvpExp.put(p.getUniqueId(), fc.getInt("Statistics.PVPExp"));
+            Main.pfm_killstreak.put(p.getUniqueId(), fc.getInt("Statistics.Current_Killstreak"));
+            Main.pfm_longestKillstreak.put(p.getUniqueId(), fc.getInt("Statistics.Longest_Killstreak"));
+            Main.pfm_deathstreak.put(p.getUniqueId(), fc.getInt("Statistics.Current_Deathstreak"));
             Main.pfm_completedMaze.put(p.getUniqueId(), fc.getString("Completed.Maze"));
             Main.pfm_completedParkour.put(p.getUniqueId(), fc.getString("Completed.Parkour"));
             Main.barEnabled.put(p.getUniqueId(), fc.getString("Toggled.Bar"));
@@ -195,7 +235,7 @@ public class PlayerFileManager extends BukkitRunnable {
     public void create(Player p) {
         File pfile = getPF(p);
         FileConfiguration fc = YamlConfiguration.loadConfiguration(pfile);
-        fc.set("Information.UUID", p.getUniqueId().toString());
+//        fc.set("Information.UUID", p.getUniqueId().toString());
         fc.set("Information.Name", p.getName());
         fc.set("Statistics.Joins", 1);
         fc.set("Statistics.Kills", 0);
@@ -204,6 +244,9 @@ public class PlayerFileManager extends BukkitRunnable {
         fc.set("Statistics.Time Online", 0);
         fc.set("Completed.Parkour", "no");
         fc.set("Completed.Maze", "no");
+        fc.set("Statistics.Current_Killstreak", 0);
+        fc.set("Statistics.Longest_Killstreak", 0);
+        fc.set("Statistics.Current_Deathstreak", 0);
         Main.pfm_uuid.put(p.getUniqueId(), p.getUniqueId().toString());
         Main.pfm_name.put(p.getUniqueId(), p.getName());
         Main.pfm_joins.put(p.getUniqueId(), 1);
@@ -213,8 +256,9 @@ public class PlayerFileManager extends BukkitRunnable {
         Main.pfm_timeOnline.put(p.getUniqueId(), fc.getInt("Statistics.Time Online"));
         Main.pfm_completedMaze.put(p.getUniqueId(), "no");
         Main.pfm_completedParkour.put(p.getUniqueId(), "no");
-//        fc.set("Statistics.Current Killstreak", zero);
-//        fc.set("Statistics.Longest Killstreak", zero);
+        Main.pfm_killstreak.put(p.getUniqueId(), 0);
+        Main.pfm_longestKillstreak.put(p.getUniqueId(), 0);
+        Main.pfm_deathstreak.put(p.getUniqueId(), 0);
         try {
             fc.save(pfile);
         } catch (IOException e) {
@@ -254,6 +298,9 @@ public class PlayerFileManager extends BukkitRunnable {
         fc.set("Completed.Maze", Main.pfm_completedMaze.get(p.getUniqueId()));
         fc.set("Completed.Parkour", Main.pfm_completedParkour.get(p.getUniqueId()));
         fc.set("Toggled.Bar", Main.barEnabled.get(p.getUniqueId()));
+        fc.set("Statistics.Current_Killstreak", Main.pfm_killstreak.get(p.getUniqueId()));
+        fc.set("Statistics.Longest_Killstreak", Main.pfm_longestKillstreak.get(p.getUniqueId()));
+        fc.set("Statistics.Current_Deathstreak", Main.pfm_deathstreak.get(p.getUniqueId()));
 //        fc.set("Rewards.Count", Main.pfm_dailyReward.get(p.getUniqueId()));
 //        fc.set("Rewards.Dates", Main.pfm_dailyRewardDates.get(p.getUniqueId()));
         try {
@@ -300,6 +347,15 @@ public class PlayerFileManager extends BukkitRunnable {
         }
         if (fc.get("Statistics.PVPExp") == null) {
             fc.set("Statistics.PVPExp", 50);
+        }
+        if (fc.get("Statistics.Current_Killstreak") == null) {
+            fc.set("Statistics.Current_Killstreak", 0);
+        }
+        if (fc.get("Statistics.Longest_Killstreak") == null) {
+            fc.set("Statistics.Longest_Killstreak", 0);
+        }
+        if (fc.get("Statistics.Current_Deathstreak") == null) {
+            fc.set("Statistics.Current_Deathstreak", 0);
         }
         if (fc.get("Completed.Maze") == null) {
             fc.set("Completed.Maze", "no");

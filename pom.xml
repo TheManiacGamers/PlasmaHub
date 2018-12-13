@@ -7,7 +7,6 @@
     <artifactId>PlasmaHub</artifactId> <!-- change to plugin name -->
     <packaging>jar</packaging>
     <name>PlasmaHub</name> <!-- change to plugin name -->
-    <version>1.4.2.2</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

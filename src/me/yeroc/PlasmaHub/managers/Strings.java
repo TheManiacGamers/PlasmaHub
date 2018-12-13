@@ -173,6 +173,10 @@ public class Strings {
     private String stats_expLevel = ("§aExp Level: §c");
     private String pluginDisabled = ("{SERVER}§cThe plugin is currently disabled.");
     private String clearingEntities = ("{SERVER}§aClearing entities in the world: ");
+    private String barToggled = ("{PREFIX} §bYou have toggled your bar: ");
+    private String PlasmaNetwork = ("§7-=[ §2§lPlasmaNetwork §7]=-");
+    private String stats_killstreak = ("§aKillstreak: ");
+    private String stats_longestKillstreak = ("§aLongest Killstreak: ");
 
     // prefix: text
     public String getMessage(String message) {
@@ -192,6 +196,12 @@ public class Strings {
                             Main.messages.put("server", server);
                         }
                         s = s.replace("{SERVER}", Main.messages.get("server"));
+                    }
+                    if (s.contains("{PVP}")) {
+                        if (Main.messages.get("pvp") == null) {
+                            Main.messages.put("pvp", pvp);
+                        }
+                        s = s.replace("{PVP}", Main.messages.get("pvp"));
                     }
                     if (s.contains("{KOTL}")) {
                         if (Main.messages.get("kotl") == null) {
@@ -423,7 +433,11 @@ public class Strings {
             configs.getMessages().set("Messages.pvpLevel", stats_pvpLevel);
             configs.getMessages().set("Messages.expLevel", stats_expLevel);
             configs.getMessages().set("Messages.pluginDisabled", pluginDisabled);
-            configs.getMessages().set("Messags.clearingEntities", clearingEntities);
+            configs.getMessages().set("Messages.clearingEntities", clearingEntities);
+            configs.getMessages().set("Messages.barToggled", barToggled);
+            configs.getMessages().set("Messages.PlasmaNetwork", PlasmaNetwork);
+            configs.getMessages().set("Messages.stats_killstreak", stats_killstreak);
+            configs.getMessages().set("Messages.stats_longestKillstreak", stats_longestKillstreak);
             configs.saveMessages();
         }
         for (String s : configs.getMessages().getStringList("Messages")) {
@@ -1215,6 +1229,26 @@ public class Strings {
                     configs.getMessages().set("Messages." + s, reloading);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, reloading);
+                }
+                if (s.equalsIgnoreCase("barToggled")) {
+                    configs.getMessages().set("Messages." + s, barToggled);
+                    Main.log("Set default for: " + s + ".");
+                    Main.messages.put(s, barToggled);
+                }
+                if (s.equalsIgnoreCase("PlasmaNetwork")) {
+                    configs.getMessages().set("Messages." + s, PlasmaNetwork);
+                    Main.log("Set default for: " + s + ".");
+                    Main.messages.put(s, PlasmaNetwork);
+                }
+                if (s.equalsIgnoreCase("stats_killstreak")) {
+                    configs.getMessages().set("Messages." + s, stats_killstreak);
+                    Main.log("Set default for: " + s + ".");
+                    Main.messages.put(s, stats_killstreak);
+                }
+                if (s.equalsIgnoreCase("stats_longestKillstreak")) {
+                    configs.getMessages().set("Messages." + s, stats_longestKillstreak);
+                    Main.log("Set default for: " + s + ".");
+                    Main.messages.put(s, stats_longestKillstreak);
                 }
             }
         }

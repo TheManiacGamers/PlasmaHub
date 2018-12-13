@@ -12,6 +12,7 @@ import me.yeroc.PlasmaHub.serverselector.ServerSelector;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.command.CommandSender;
@@ -235,33 +236,42 @@ public class API extends BukkitRunnable {
         if (Main.barProgress.get(p.getUniqueId()) == null) {
             Main.barProgress.put(p.getUniqueId(), 0);
         }
-        if (Main.barProgress.get(p.getUniqueId()) >= 4) {
+        if (Main.barProgress.get(p.getUniqueId()) >= 5) {
             Main.barProgress.put(p.getUniqueId(), 0);
         }
         int i = Main.barProgress.get(p.getUniqueId());
         int newI = i + 1;
         Main.barProgress.put(p.getUniqueId(), newI);
         if (i == 0) {
-            bapi.sendBossBar(p, ChatColor.GREEN + "Your Kills: " + pfm.getKills(p), BarColor.BLUE, BarStyle.SOLID, 3, 1);
+            bapi.sendBossBar(p, ChatColor.GREEN + "Your Kills: " + ChatColor.RED + pfm.getKills(p), BarColor.BLUE, BarStyle.SOLID, 3, 1);
             return;
         }
         if (i == 1) {
-            bapi.sendBossBar(p, ChatColor.GREEN + "Your Deaths: " + pfm.getDeaths(p), BarColor.GREEN, BarStyle.SOLID, 3, 1);
+            bapi.sendBossBar(p, ChatColor.GREEN + "Your Deaths: " + ChatColor.RED + pfm.getDeaths(p), BarColor.GREEN, BarStyle.SOLID, 3, 1);
             return;
         }
         if (i == 2) {
-            bapi.sendBossBar(p, ChatColor.GREEN + "Your Joins: " + pfm.getJoins(p), BarColor.PURPLE, BarStyle.SOLID, 3, 1);
+            bapi.sendBossBar(p, ChatColor.GREEN + "Your Joins: " + ChatColor.RED + pfm.getJoins(p), BarColor.PURPLE, BarStyle.SOLID, 3, 1);
             return;
         }
         if (i == 3) {
-            bapi.sendBossBar(p, ChatColor.GREEN + "Your Gems: " + pfm.getGems(p), BarColor.RED, BarStyle.SOLID, 3, 1);
+            bapi.sendBossBar(p, ChatColor.GREEN + "Your Gems: " + ChatColor.RED + pfm.getGems(p), BarColor.RED, BarStyle.SOLID, 3, 1);
             return;
         }
         if (i == 4) {
-            bapi.sendBossBar(p, ChatColor.GREEN + "Your PVP Level: " + pfm.getLevel(p), BarColor.YELLOW, BarStyle.SOLID, 3, 1);
+            bapi.sendBossBar(p, ChatColor.GREEN + "Your PVP Level: " + ChatColor.RED + pfm.getLevel(p), BarColor.YELLOW, BarStyle.SOLID, 3, 1);
+            return;
+        }
+        if (i == 5) {
+            bapi.sendBossBar(p, ChatColor.GREEN + "Your Longest Killstreak: " + ChatColor.RED + pfm.getLongestKillstreak(p), BarColor.PINK, BarStyle.SOLID, 3, 1);
             return;
         }
         i = 0;
         Main.barProgress.put(p.getUniqueId(), i);
+    }
+
+    public void applyAttackSpeed(Player p) {
+        p.getAttribute(Attribute.GENERIC_ATTACK_SPEED).setBaseValue(512.0D);
+        p.saveData();
     }
 }

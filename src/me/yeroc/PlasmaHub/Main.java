@@ -111,6 +111,10 @@ public class Main extends JavaPlugin implements Listener {
     public static HashMap<UUID, Integer> pfm_timeOnline = new HashMap<>();
     public static HashMap<UUID, Integer> pfm_pvpLevel = new HashMap<>();
     public static HashMap<UUID, Integer> pfm_pvpExp = new HashMap<>();
+    public static HashMap<UUID, Integer> pfm_killstreak = new HashMap<>();
+    public static HashMap<UUID, Integer> pfm_longestKillstreak = new HashMap<>();
+    public static HashMap<UUID, Integer> pfm_deathstreak = new HashMap<>();
+
     //    public static HashMap<UUID, String> pfm_dailyReward = new HashMap<>();
     //    public static HashMap<UUID, String> pfm_dailyRewardDates = new HashMap<>();
 
@@ -205,12 +209,12 @@ public class Main extends JavaPlugin implements Listener {
                 Main.maze_isInMaze.put(p.getUniqueId(), "no");
                 Main.parkour_isInParkour.put(p.getUniqueId(), "no");
                 Main.parkour_playerCheckpoints.put(p.getUniqueId(), "zero");
+                pfm.load(p);
                 if (p.getGameMode().equals(GameMode.SURVIVAL)) {
                     p.getInventory().clear();
                     api.resetInventory(p);
                     p.setFlying(false);
                     p.setAllowFlight(true);
-                    pfm.load(p);
                     p.sendMessage(strings.getMessage("inventoryResetReload"));
                     Bukkit.getScheduler().scheduleSyncDelayedTask(this, new BukkitRunnable() {
                         @Override
@@ -221,6 +225,7 @@ public class Main extends JavaPlugin implements Listener {
                         }
                     }, 100L);
                 }
+                api.applyAttackSpeed(p);
                 p.setPlayerListHeader("                           ");
                 p.setPlayerListFooter(strings.getMessage("PlasmaNetwork"));
             }
