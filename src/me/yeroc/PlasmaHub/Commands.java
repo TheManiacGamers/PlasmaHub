@@ -4,7 +4,6 @@ import com.sk89q.minecraft.util.commands.ChatColor;
 import com.sk89q.minecraft.util.commands.Command;
 import com.sk89q.minecraft.util.commands.CommandContext;
 import com.sk89q.minecraft.util.commands.CommandNumberFormatException;
-import me.ryandw11.ultrabar.api.UltraBarAPI;
 import me.yeroc.PlasmaHub.managers.Configs;
 import me.yeroc.PlasmaHub.managers.PermissionsManager;
 import me.yeroc.PlasmaHub.managers.PlayerFileManager;
@@ -17,15 +16,15 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.boss.BarColor;
-import org.bukkit.boss.BarStyle;
+import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Random;
 import java.util.UUID;
 
 public class Commands {
@@ -81,125 +80,383 @@ public class Commands {
 //        bapi.sendBossBar(p, "" + pfm.getLevel(p), BarColor.BLUE, BarStyle.SOLID, 60, 1);
 //    }
 
-    @Command(aliases = "gmc", desc = "Change to creative mode.")
-    public void onGMC(CommandContext args, CommandSender sender) {
+    @Command(aliases = "dr", desc = "Daily rewards!")
+    public void onDR(CommandContext args, CommandSender sender) {
         if (api.isPlayer(sender)) {
             Player p = (Player) sender;
-            if (api.hasPermSender(p, perms.plasma_gamemode_creative)) {
-                if (p.getGameMode().equals(GameMode.CREATIVE)) {
-                    p.sendMessage(strings.getMessage("alreadyThatGamemode"));
+            if (args.argsLength() == 0) {
+                if (p.hasPermission(perms.plasma_dailyrewards)) {
+                    String thedate = new SimpleDateFormat("dd-MM").format(new Date());
+                    if (Main.dailyRewards.get(p.getUniqueId()) == null) {
+                        int gemAmount = RewardsManager.getRandomGems(p, 5);
+                        p.sendMessage(strings.getMessage("rewards") + ChatColor.GREEN + " You got " + ChatColor.RED + gemAmount + ChatColor.GREEN + " gems!");
+                        p.sendMessage(strings.getMessage("dailyRewardsClaimed"));
+                        Main.dailyRewards.put(p.getUniqueId(), thedate);
+                        return;
+                    }
+                    if (!(Main.dailyRewards.get(p.getUniqueId()).equalsIgnoreCase(thedate))) {
+                        int gemAmount = RewardsManager.getRandomGems(p, 10);
+                        p.sendMessage(strings.getMessage("rewards") + ChatColor.GREEN + " You got " + ChatColor.RED + gemAmount + ChatColor.GREEN + " gems!");
+                        p.sendMessage(strings.getMessage("dailyRewardsClaimed"));
+                        Main.dailyRewards.put(p.getUniqueId(), thedate);
+
+                        return;
+                    }
+                    String thecurrentdate = new SimpleDateFormat("dd-MM HH:mm:ss").format(new Date());
+                    p.sendMessage(strings.getMessage("dailyRewardsAlreadyClaimed") + thecurrentdate);
+                    return;
                 } else {
-                    p.sendMessage(strings.getMessage("changedGamemode") + "Creative.");
-                    p.getInventory().clear();
-                    p.setGameMode(GameMode.CREATIVE);
-                    if (Main.canDoubleJump.get(p.getUniqueId()) == null) {
-                        Main.canDoubleJump.put(p.getUniqueId(), "yes");
-                    }
-                    if (Main.parkour_isInParkour.get(p.getUniqueId()).equalsIgnoreCase("yes")) {
-                        Main.parkour_isInParkour.put(p.getUniqueId(), "no");
-                        Main.parkour_playerCheckpoints.put(p.getUniqueId(), "zero");
-                        p.sendMessage(strings.getMessage("parkour_stop"));
-                        Main.canDoubleJump.put(p.getUniqueId(), "yes");
-                    }
-                    if (Main.maze_isInMaze.get(p.getUniqueId()).equalsIgnoreCase("yes")) {
-                        Main.maze_isInMaze.put(p.getUniqueId(), "no");
-                        p.sendMessage(strings.getMessage("maze_stop"));
-                        Main.canDoubleJump.put(p.getUniqueId(), "yes");
-                    }
-                    if (Main.canDoubleJump.get(p.getUniqueId()) == null) {
-                        Main.canDoubleJump.put(p.getUniqueId(), "yes");
+                    p.sendMessage(strings.getMessage("noPermission"));
+                }
+                return;
+            }
+            if (args.argsLength() == 1) {
+                if (args.getString(0).equalsIgnoreCase("reset")) {
+                    if (p.hasPermission(perms.plasma_dailyrewards_reset)) {
+                        pfm.getPlayerFile(p).set("DailyRewards.Claimed", "no");
+                        Main.dailyRewards.put(p.getUniqueId(), "no");
+                        p.sendMessage(strings.getMessage("rewards") + ChatColor.RED + " You reset your Daily Rewards.");
+                    } else {
+                        p.sendMessage(strings.getMessage("noPermission"));
                     }
                 }
+                return;
+            }
+            if (args.argsLength() == 2) {
+                Player t = Bukkit.getPlayer(args.getString(1));
+                if (t != null) {
+                    if (t.isOnline()) {
+                        if (p.hasPermission(perms.plasma_dailyrewards_reset_others)) {
+                            pfm.resetDailyRewards(p);
+                        } else {
+                            sender.sendMessage(strings.getMessage("noPermission"));
+                        }
+                    } else {
+                        sender.sendMessage(ChatColor.RED + "That player is not online!");
+                    }
+                } else {
+                    sender.sendMessage(ChatColor.RED + "That player is not online!");
+                }
             } else {
-                sender.sendMessage(strings.getMessage("noPermission"));
+                p.sendMessage(strings.getMessage("incorrectArguments"));
             }
         } else {
             sender.sendMessage(strings.getMessage("mustBePlayer"));
+        }
+    }
+
+    @Command(aliases = "gmc", desc = "Change to creative mode.")
+    public void onGMC(CommandContext args, CommandSender sender) {
+        Player p = (Player) sender;
+        if (api.hasPermSender(p, perms.plasma_gamemode_creative)) {
+            if (args.argsLength() == 0) {
+                if (api.isPlayer(sender)) {
+                    if (p.getGameMode().equals(GameMode.CREATIVE)) {
+                        p.sendMessage(strings.getMessage("alreadyThatGamemode"));
+                    } else {
+                        p.sendMessage(strings.getMessage("changedGamemode") + "Creative.");
+                        p.getInventory().clear();
+                        p.setGameMode(GameMode.CREATIVE);
+                        if (Main.canDoubleJump.get(p.getUniqueId()) == null) {
+                            Main.canDoubleJump.put(p.getUniqueId(), "yes");
+                        }
+                        if (Main.parkour_isInParkour.get(p.getUniqueId()).equalsIgnoreCase("yes")) {
+                            Main.parkour_isInParkour.put(p.getUniqueId(), "no");
+                            Main.parkour_playerCheckpoints.put(p.getUniqueId(), "zero");
+                            p.sendMessage(strings.getMessage("parkour_stop"));
+                            Main.canDoubleJump.put(p.getUniqueId(), "yes");
+                        }
+                        if (Main.maze_isInMaze.get(p.getUniqueId()).equalsIgnoreCase("yes")) {
+                            Main.maze_isInMaze.put(p.getUniqueId(), "no");
+                            p.sendMessage(strings.getMessage("maze_stop"));
+                            Main.canDoubleJump.put(p.getUniqueId(), "yes");
+                        }
+                        if (Main.canDoubleJump.get(p.getUniqueId()) == null) {
+                            Main.canDoubleJump.put(p.getUniqueId(), "yes");
+                        }
+                        return;
+                    }
+                } else {
+                    sender.sendMessage(strings.getMessage("mustBePlayer"));
+                }
+            }
+            if (args.argsLength() == 1) {
+                if (!(p.hasPermission(perms.plasma_gamemode_creative_other))) {
+                    p.sendMessage(strings.getMessage("noPermission"));
+                    return;
+                }
+                Player t = Bukkit.getPlayer(args.getString(0));
+                if (t != null) {
+                    if (t.isOnline()) {
+//                        t.sendMessage(strings.getMessage("changedGamemode") + "Creative.");
+                        t.sendMessage(strings.getMessage("prefix") + ChatColor.GREEN + " Your gamemode has been changed to Creative.");
+                        p.sendMessage(strings.getMessage("prefix") + ChatColor.GREEN + " You changed that players gamemode.");
+                        t.getInventory().clear();
+                        t.setGameMode(GameMode.CREATIVE);
+                        if (Main.canDoubleJump.get(t.getUniqueId()) == null) {
+                            Main.canDoubleJump.put(t.getUniqueId(), "yes");
+                        }
+                        if (Main.parkour_isInParkour.get(t.getUniqueId()).equalsIgnoreCase("yes")) {
+                            Main.parkour_isInParkour.put(t.getUniqueId(), "no");
+                            Main.parkour_playerCheckpoints.put(t.getUniqueId(), "zero");
+                            t.sendMessage(strings.getMessage("parkour_stop"));
+                            Main.canDoubleJump.put(t.getUniqueId(), "yes");
+                        }
+                        if (Main.maze_isInMaze.get(t.getUniqueId()).equalsIgnoreCase("yes")) {
+                            Main.maze_isInMaze.put(t.getUniqueId(), "no");
+                            t.sendMessage(strings.getMessage("maze_stop"));
+                            Main.canDoubleJump.put(t.getUniqueId(), "yes");
+                        }
+                        if (Main.canDoubleJump.get(t.getUniqueId()) == null) {
+                            Main.canDoubleJump.put(t.getUniqueId(), "yes");
+                        }
+                    } else {
+                        sender.sendMessage(ChatColor.RED + "That player is not online!");
+                    }
+                } else {
+                    sender.sendMessage(ChatColor.RED + "That player is not online!");
+                }
+            } else {
+                sender.sendMessage(strings.getMessage("incorrectArguments"));
+            }
+        } else {
+            sender.sendMessage(strings.getMessage("noPermission"));
         }
     }
 
     @Command(aliases = "gma", desc = "Change to adventure mode.")
     public void onGMA(CommandContext args, CommandSender sender) {
-        if (api.isPlayer(sender)) {
-            Player p = (Player) sender;
-            if (api.hasPermSender(p, perms.plasma_gamemode_advemture)) {
-                if (p.getGameMode().equals(GameMode.ADVENTURE)) {
-                    p.sendMessage(strings.getMessage("alreadyThatGamemode"));
+        Player p = (Player) sender;
+        if (api.hasPermSender(p, perms.plasma_gamemode_adventure)) {
+            if (args.argsLength() == 0) {
+                if (api.isPlayer(sender)) {
+                    if (p.getGameMode().equals(GameMode.ADVENTURE)) {
+                        p.sendMessage(strings.getMessage("alreadyThatGamemode"));
+                    } else {
+                        p.sendMessage(strings.getMessage("changedGamemode") + "Adventure.");
+                        p.getInventory().clear();
+                        p.setGameMode(GameMode.ADVENTURE);
+                        if (Main.canDoubleJump.get(p.getUniqueId()) == null) {
+                            Main.canDoubleJump.put(p.getUniqueId(), "yes");
+                        }
+                        if (Main.parkour_isInParkour.get(p.getUniqueId()).equalsIgnoreCase("yes")) {
+                            Main.parkour_isInParkour.put(p.getUniqueId(), "no");
+                            Main.parkour_playerCheckpoints.put(p.getUniqueId(), "zero");
+                            p.sendMessage(strings.getMessage("parkour_stop"));
+                            Main.canDoubleJump.put(p.getUniqueId(), "yes");
+                        }
+                        if (Main.maze_isInMaze.get(p.getUniqueId()).equalsIgnoreCase("yes")) {
+                            Main.maze_isInMaze.put(p.getUniqueId(), "no");
+                            p.sendMessage(strings.getMessage("maze_stop"));
+                            Main.canDoubleJump.put(p.getUniqueId(), "yes");
+                        }
+                        if (Main.canDoubleJump.get(p.getUniqueId()) == null) {
+                            Main.canDoubleJump.put(p.getUniqueId(), "yes");
+                        }
+                        return;
+                    }
                 } else {
-                    p.sendMessage(strings.getMessage("changedGamemode") + "Adventure.");
-                    api.resetInventory(p);
-                    p.setGameMode(GameMode.ADVENTURE);
+                    sender.sendMessage(strings.getMessage("mustBePlayer"));
+                }
+            }
+            if (args.argsLength() == 1) {
+                if (!(p.hasPermission(perms.plasma_gamemode_adventure_other))) {
+                    p.sendMessage(strings.getMessage("noPermission"));
+                    return;
+                }
+                Player t = Bukkit.getPlayer(args.getString(0));
+                if (t != null) {
+                    if (t.isOnline()) {
+                        p.sendMessage(strings.getMessage("prefix") + ChatColor.GREEN + " You changed that players gamemode.");
+                        t.sendMessage(strings.getMessage("prefix") + ChatColor.GREEN + " Your gamemode has been changed to Adventure.");
+//                        t.sendMessage(strings.getMessage("changedGamemode") + "Adventure.");
+                        t.getInventory().clear();
+                        t.setGameMode(GameMode.ADVENTURE);
+                        if (Main.canDoubleJump.get(t.getUniqueId()) == null) {
+                            Main.canDoubleJump.put(t.getUniqueId(), "yes");
+                        }
+                        if (Main.parkour_isInParkour.get(t.getUniqueId()).equalsIgnoreCase("yes")) {
+                            Main.parkour_isInParkour.put(t.getUniqueId(), "no");
+                            Main.parkour_playerCheckpoints.put(t.getUniqueId(), "zero");
+                            t.sendMessage(strings.getMessage("parkour_stop"));
+                            Main.canDoubleJump.put(t.getUniqueId(), "yes");
+                        }
+                        if (Main.maze_isInMaze.get(t.getUniqueId()).equalsIgnoreCase("yes")) {
+                            Main.maze_isInMaze.put(t.getUniqueId(), "no");
+                            t.sendMessage(strings.getMessage("maze_stop"));
+                            Main.canDoubleJump.put(t.getUniqueId(), "yes");
+                        }
+                        if (Main.canDoubleJump.get(t.getUniqueId()) == null) {
+                            Main.canDoubleJump.put(t.getUniqueId(), "yes");
+                        }
+                    } else {
+                        sender.sendMessage(ChatColor.RED + "That player is not online!");
+                    }
+                } else {
+                    sender.sendMessage(ChatColor.RED + "That player is not online!");
                 }
             } else {
-                sender.sendMessage(strings.getMessage("noPermission"));
+                sender.sendMessage(strings.getMessage("incorrectArguments"));
             }
         } else {
-            sender.sendMessage(strings.getMessage("mustBePlayer"));
+            sender.sendMessage(strings.getMessage("noPermission"));
         }
     }
 
     @Command(aliases = "gmsp", desc = "Change to spectator mode.")
     public void onGMSP(CommandContext args, CommandSender sender) {
-        if (api.isPlayer(sender)) {
-            Player p = (Player) sender;
-            if (api.hasPermSender(p, perms.plasma_gamemode_spectator)) {
-                if (p.getGameMode().equals(GameMode.SPECTATOR)) {
-                    p.sendMessage(strings.getMessage("alreadyThatGamemode"));
+        Player p = (Player) sender;
+        if (api.hasPermSender(p, perms.plasma_gamemode_spectator)) {
+            if (args.argsLength() == 0) {
+                if (api.isPlayer(sender)) {
+                    if (p.getGameMode().equals(GameMode.SPECTATOR)) {
+                        p.sendMessage(strings.getMessage("alreadyThatGamemode"));
+                    } else {
+                        p.sendMessage(strings.getMessage("changedGamemode") + "Spectator.");
+                        p.setGameMode(GameMode.SPECTATOR);
+                        if (Main.canDoubleJump.get(p.getUniqueId()) == null) {
+                            Main.canDoubleJump.put(p.getUniqueId(), "yes");
+                        }
+                        if (Main.parkour_isInParkour.get(p.getUniqueId()).equalsIgnoreCase("yes")) {
+                            Main.parkour_isInParkour.put(p.getUniqueId(), "no");
+                            Main.parkour_playerCheckpoints.put(p.getUniqueId(), "zero");
+                            p.sendMessage(strings.getMessage("parkour_stop"));
+                            Main.canDoubleJump.put(p.getUniqueId(), "yes");
+                        }
+                        if (Main.maze_isInMaze.get(p.getUniqueId()).equalsIgnoreCase("yes")) {
+                            Main.maze_isInMaze.put(p.getUniqueId(), "no");
+                            p.sendMessage(strings.getMessage("maze_stop"));
+                            Main.canDoubleJump.put(p.getUniqueId(), "yes");
+                        }
+                        if (Main.canDoubleJump.get(p.getUniqueId()) == null) {
+                            Main.canDoubleJump.put(p.getUniqueId(), "yes");
+                        }
+                        return;
+                    }
                 } else {
-                    p.sendMessage(strings.getMessage("changedGamemode") + "Spectator.");
-                    p.setGameMode(GameMode.SPECTATOR);
+                    sender.sendMessage(strings.getMessage("mustBePlayer"));
+                }
+            }
+            if (args.argsLength() == 1) {
+                if (!(p.hasPermission(perms.plasma_gamemode_spectator_other))) {
+                    p.sendMessage(strings.getMessage("noPermission"));
+                    return;
+                }
+                Player t = Bukkit.getPlayer(args.getString(0));
+                if (t != null) {
+                    if (t.isOnline()) {
+                        p.sendMessage(strings.getMessage("prefix") + ChatColor.GREEN + " You changed that players gamemode.");
+                        t.sendMessage(strings.getMessage("prefix") + ChatColor.GREEN + " Your gamemode has been changed to Spectator.");
+//                        t.sendMessage(strings.getMessage("changedGamemode") + "Spectator.");
+                        t.getInventory().clear();
+                        t.setGameMode(GameMode.SPECTATOR);
+                        if (Main.canDoubleJump.get(t.getUniqueId()) == null) {
+                            Main.canDoubleJump.put(t.getUniqueId(), "yes");
+                        }
+                        if (Main.parkour_isInParkour.get(t.getUniqueId()).equalsIgnoreCase("yes")) {
+                            Main.parkour_isInParkour.put(t.getUniqueId(), "no");
+                            Main.parkour_playerCheckpoints.put(t.getUniqueId(), "zero");
+                            t.sendMessage(strings.getMessage("parkour_stop"));
+                            Main.canDoubleJump.put(t.getUniqueId(), "yes");
+                        }
+                        if (Main.maze_isInMaze.get(t.getUniqueId()).equalsIgnoreCase("yes")) {
+                            Main.maze_isInMaze.put(t.getUniqueId(), "no");
+                            t.sendMessage(strings.getMessage("maze_stop"));
+                            Main.canDoubleJump.put(t.getUniqueId(), "yes");
+                        }
+                        if (Main.canDoubleJump.get(t.getUniqueId()) == null) {
+                            Main.canDoubleJump.put(t.getUniqueId(), "yes");
+                        }
+                    } else {
+                        sender.sendMessage(ChatColor.RED + "That player is not online!");
+                    }
+                } else {
+                    sender.sendMessage(ChatColor.RED + "That player is not online!");
                 }
             } else {
-                sender.sendMessage(strings.getMessage("noPermission"));
+                sender.sendMessage(strings.getMessage("incorrectArguments"));
             }
         } else {
-            sender.sendMessage(strings.getMessage("mustBePlayer"));
+            sender.sendMessage(strings.getMessage("noPermission"));
         }
     }
 
-
     @Command(aliases = "gms", desc = "Change to survival mode.")
     public void onGMS(CommandContext args, CommandSender sender) {
-        if (api.isPlayer(sender)) {
-            Player p = (Player) sender;
-            if (api.hasPermSender(p, perms.plasma_gamemode_survival)) {
-                if (p.getGameMode().equals(GameMode.SURVIVAL)) {
-                    p.sendMessage(strings.getMessage("alreadyThatGamemode"));
+        Player p = (Player) sender;
+        if (api.hasPermSender(p, perms.plasma_gamemode_creative)) {
+            if (args.argsLength() == 0) {
+                if (api.isPlayer(sender)) {
+                    if (p.getGameMode().equals(GameMode.SURVIVAL)) {
+                        p.sendMessage(strings.getMessage("alreadyThatGamemode"));
+                    } else {
+                        p.sendMessage(strings.getMessage("changedGamemode") + "Survival.");
+                        api.resetInventory(p);
+                        p.setGameMode(GameMode.SURVIVAL);
+                        if (Main.canDoubleJump.get(p.getUniqueId()) == null) {
+                            Main.canDoubleJump.put(p.getUniqueId(), "yes");
+                        }
+                        if (Main.parkour_isInParkour.get(p.getUniqueId()).equalsIgnoreCase("yes")) {
+                            Main.parkour_isInParkour.put(p.getUniqueId(), "no");
+                            Main.parkour_playerCheckpoints.put(p.getUniqueId(), "zero");
+                            p.sendMessage(strings.getMessage("parkour_stop"));
+                            Main.canDoubleJump.put(p.getUniqueId(), "yes");
+                        }
+                        if (Main.maze_isInMaze.get(p.getUniqueId()).equalsIgnoreCase("yes")) {
+                            Main.maze_isInMaze.put(p.getUniqueId(), "no");
+                            p.sendMessage(strings.getMessage("maze_stop"));
+                            Main.canDoubleJump.put(p.getUniqueId(), "yes");
+                        }
+                        if (Main.canDoubleJump.get(p.getUniqueId()) == null) {
+                            Main.canDoubleJump.put(p.getUniqueId(), "yes");
+                        }
+                        return;
+                    }
                 } else {
-                    p.sendMessage(strings.getMessage("changedGamemode") + "Survival.");
-                    p.setGameMode(GameMode.SURVIVAL);
-                    api.resetInventory(p);
-                    Main.canDoubleJump.put(p.getUniqueId(), "yes");
-                    if (Main.canDoubleJump.get(p.getUniqueId()) == null) {
-                        Main.canDoubleJump.put(p.getUniqueId(), "yes");
+                    sender.sendMessage(strings.getMessage("mustBePlayer"));
+                }
+            }
+            if (args.argsLength() == 1) {
+                if (!(p.hasPermission(perms.plasma_gamemode_survival_other))) {
+                    p.sendMessage(strings.getMessage("noPermission"));
+                    return;
+                }
+                Player t = Bukkit.getPlayer(args.getString(0));
+                if (t != null) {
+                    if (t.isOnline()) {
+                        p.sendMessage(strings.getMessage("prefix") + ChatColor.GREEN + " You changed that players gamemode.");
+                        t.sendMessage(strings.getMessage("prefix") + ChatColor.GREEN + " Your gamemode has been changed to Survival.");
+//                        t.sendMessage(strings.getMessage("changedGamemode") + "Survival.");
+                        api.resetInventory(t);
+                        t.setGameMode(GameMode.SURVIVAL);
+                        if (Main.canDoubleJump.get(t.getUniqueId()) == null) {
+                            Main.canDoubleJump.put(t.getUniqueId(), "yes");
+                        }
+                        if (Main.parkour_isInParkour.get(t.getUniqueId()).equalsIgnoreCase("yes")) {
+                            Main.parkour_isInParkour.put(t.getUniqueId(), "no");
+                            Main.parkour_playerCheckpoints.put(t.getUniqueId(), "zero");
+                            t.sendMessage(strings.getMessage("parkour_stop"));
+                            Main.canDoubleJump.put(t.getUniqueId(), "yes");
+                        }
+                        if (Main.maze_isInMaze.get(t.getUniqueId()).equalsIgnoreCase("yes")) {
+                            Main.maze_isInMaze.put(t.getUniqueId(), "no");
+                            t.sendMessage(strings.getMessage("maze_stop"));
+                            Main.canDoubleJump.put(t.getUniqueId(), "yes");
+                        }
+                        if (Main.canDoubleJump.get(t.getUniqueId()) == null) {
+                            Main.canDoubleJump.put(t.getUniqueId(), "yes");
+                        }
+                    } else {
+                        sender.sendMessage(ChatColor.RED + "That player is not online!");
                     }
-                    if (Main.maze_isInMaze.get(p.getUniqueId()) == null) {
-                        Main.maze_isInMaze.put(p.getUniqueId(), "no");
-                    }
-                    if (Main.parkour_playerCheckpoints.get(p.getUniqueId()) == null) {
-                        Main.parkour_isInParkour.put(p.getUniqueId(), "no");
-                        Main.parkour_playerCheckpoints.put(p.getUniqueId(), "zero");
-                    }
-                    if (Main.parkour_isInParkour.get(p.getUniqueId()) == null) {
-                        Main.parkour_isInParkour.put(p.getUniqueId(), "no");
-                        Main.parkour_playerCheckpoints.put(p.getUniqueId(), "zero");
-                    }
-                    if (Main.parkour_isInParkour.get(p.getUniqueId()).equalsIgnoreCase("yes")) {
-                        Main.parkour_isInParkour.put(p.getUniqueId(), "no");
-                        Main.parkour_playerCheckpoints.put(p.getUniqueId(), "zero");
-                    }
-                    if (Main.maze_isInMaze.get(p.getUniqueId()) == null) {
-                        Main.maze_isInMaze.put(p.getUniqueId(), "no");
-                    }
-                    if (Main.maze_isInMaze.get(p.getUniqueId()).equalsIgnoreCase("yes")) {
-                        Main.maze_isInMaze.put(p.getUniqueId(), "no");
-                    }
+                } else {
+                    sender.sendMessage(ChatColor.RED + "That player is not online!");
                 }
             } else {
-                sender.sendMessage(strings.getMessage("noPermission"));
+                sender.sendMessage(strings.getMessage("incorrectArguments"));
             }
         } else {
-            sender.sendMessage(strings.getMessage("mustBePlayer"));
+            sender.sendMessage(strings.getMessage("noPermission"));
         }
     }
 
@@ -462,12 +719,14 @@ public class Commands {
                             Main.maze_isInMaze.put(p.getUniqueId(), "no");
                             p.teleport(Main.spawn);
                             p.sendMessage(strings.getMessage("maze_stop"));
+                        } else {
+                            p.sendMessage(strings.getMessage("maze_notStarted"));
                         }
+                        return;
                     } else {
                         sender.sendMessage(strings.getMessage("noPermission"));
                         return;
                     }
-                    return;
                 }
                 if (args.getString(0).equalsIgnoreCase("load")) {
                     if (p.hasPermission(perms.plasma_maze_load)) {
@@ -489,12 +748,18 @@ public class Commands {
                                         Main.maze_loaded = 1;
                                     }
                                     Main.maze_loaded++;
+
                                     if (Main.maze_loaded > Main.mazes) {
                                         Main.maze_loaded = 1;
                                         p.sendMessage(strings.getMessage("maze_loaded") + "Maze 1");
                                         Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "sudo " + p.getName() + " schematic load maze_1");
                                         Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "sudo " + p.getName() + " /paste");
                                         p.sendMessage(strings.getMessage("maze_loaded_done"));
+                                        if (Main.maze_effectedMazes.get(Bukkit.getServer()) != null) {
+                                            if (Main.maze_effectedMazes.get(Bukkit.getServer()).contains(Main.maze_loaded)) {
+                                                p.sendMessage(strings.getMessage("maze_loaded_bugged"));
+                                            }
+                                        }
                                         return;
                                     }
                                     int newMazeLoaded = Main.maze_loaded;
@@ -504,10 +769,13 @@ public class Commands {
                                         Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "sudo " + p.getName() + " schematic load maze_" + Main.maze_loaded);
                                         Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "sudo " + p.getName() + " /paste");
                                         p.sendMessage(strings.getMessage("maze_loaded_done"));
+                                        if (Main.maze_effectedMazes.get(Bukkit.getServer()) != null) {
+                                            if (Main.maze_effectedMazes.get(Bukkit.getServer()).contains(Main.maze_loaded)) {
+                                                p.sendMessage(strings.getMessage("maze_loaded_bugged"));
+                                            }
+                                        }
                                     }
                                     return;
-
-
 //                                    if (Main.loadedMaze == null) {
 //                                        Main.loadedMaze = "Maze_1";
 //                                    }
@@ -599,6 +867,11 @@ public class Commands {
                             Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "sudo " + p.getName() + " schematic load maze_1");
                             Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "sudo " + p.getName() + " /paste");
                             p.sendMessage(strings.getMessage("maze_loaded_done"));
+                            if (Main.maze_effectedMazes.get(Bukkit.getServer()) != null) {
+                                if (Main.maze_effectedMazes.get(Bukkit.getServer()).contains(Main.maze_loaded)) {
+                                    p.sendMessage(strings.getMessage("maze_loaded_bugged"));
+                                }
+                            }
                         } else {
                             sender.sendMessage(strings.getMessage("maze_wrongLocation"));
                             return;
@@ -617,6 +890,15 @@ public class Commands {
                 if (args.getString(0).equalsIgnoreCase("set")) {
                     if (p.hasPermission(perms.plasma_maze_load)) {
                         if (p.getLocation().getBlock().getRelative(0, -1, 0).getLocation().equals(Main.maze_start)) {
+                            try {
+                                if (args.getInteger(1) == 0) {
+                                    p.sendMessage(strings.getMessage("maze_cannotBeZero"));
+                                    p.sendMessage(strings.getMessage("maze_mazeAmount") + Main.mazes + " mazes.");
+                                    return;
+                                }
+                            } catch (CommandNumberFormatException e) {
+                                Main.log("Someone entered a letter where a number was expected.");
+                            }
                             try {
                                 if (args.getInteger(1) <= Main.mazes) {
                                     int newMazeAmount = args.getInteger(1);
@@ -699,6 +981,7 @@ public class Commands {
                         } else if (Main.parkour_isInParkour.get(p.getUniqueId()).equalsIgnoreCase("yes")) {
                             Main.parkour_playerCheckpoints.put(p.getUniqueId(), "zero");
                             Main.canDoubleJump.put(p.getUniqueId(), "yes");
+                            p.setAllowFlight(true);
                             Main.parkour_isInParkour.put(p.getUniqueId(), "no");
                             p.getInventory().setItem(7, new ItemStack(Material.AIR, 1));
                             p.teleport(Main.spawn);
@@ -752,5 +1035,16 @@ public class Commands {
         } else {
             sender.sendMessage(strings.getMessage("mustBePlayer"));
         }
+    }
+
+    @Command(aliases = "getblock", desc = "Get the location of the block underneath you")
+    public void onGetBlock(CommandContext args, CommandSender sender) {
+        if (!(api.isPlayer(sender))) {
+            return;
+        }
+        Player p = (Player) sender;
+        Material block = p.getLocation().subtract(0, 1, 0).getBlock().getType();
+        Block b = p.getLocation().subtract(0, 1, 0).getBlock();
+        p.sendMessage(ChatColor.GREEN + "Block Name: " + block.toString() + ". Block Location- X: " + b.getLocation().getX() + " Y: " + b.getLocation().getY() + " Z: " + b.getLocation().getZ());
     }
 }
