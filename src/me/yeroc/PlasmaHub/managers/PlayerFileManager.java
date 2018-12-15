@@ -1,5 +1,6 @@
 package me.yeroc.PlasmaHub.managers;
 
+import com.sk89q.minecraft.util.commands.ChatColor;
 import me.yeroc.PlasmaHub.Main;
 import me.yeroc.PlasmaHub.serverselector.ServerSelector;
 import me.yeroc.PlasmaHub.utils.API;
@@ -13,6 +14,8 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.UUID;
 
 /**
  * Created by Corey on 1/12/2018.
@@ -156,6 +159,15 @@ public class PlayerFileManager extends BukkitRunnable {
         return Main.pfm_totalGems.get(p.getUniqueId());
     }
 
+    public void addGems(Player p, int i) {
+        if (Main.pfm_totalGems.get(p.getUniqueId()) == null) {
+            Main.pfm_totalGems.put(p.getUniqueId(), 10);
+        }
+        int oldGems = Main.pfm_totalGems.get(p.getUniqueId());
+        int newGems = oldGems + i;
+        Main.pfm_totalGems.put(p.getUniqueId(), newGems);
+    }
+
     public void addMoney(Player p, int i) {
         Main.log(strings.getMessage("pfm_addMoneyDisabled") + p.getName() + ".");
     }
@@ -205,6 +217,20 @@ public class PlayerFileManager extends BukkitRunnable {
         return Main.pfm_deathstreak.get(p.getUniqueId());
     }
 
+    public void resetDailyRewards(Player p) {
+        if (Main.dailyRewards.get(p.getUniqueId()) != null) {
+            Main.dailyRewards.remove(p.getUniqueId());
+        }
+    }
+
+    public void removeDeathStreak(Player p) {
+        if (Main.pfm_deathstreak.get(p.getUniqueId()) == null) {
+            Main.pfm_deathstreak.put(p.getUniqueId(), 0);
+        }
+        Main.pfm_deathstreak.put(p.getUniqueId(), 0);
+    }
+
+
     public void load(Player p) {
         File pfile = getPF(p);
 //        File pfile = File(plugin.getDataFolder() + File.separator + "PlayerData" + File.separator + p.getUniqueId().toString() + ".yml");
@@ -226,13 +252,23 @@ public class PlayerFileManager extends BukkitRunnable {
             Main.pfm_completedMaze.put(p.getUniqueId(), fc.getString("Completed.Maze"));
             Main.pfm_completedParkour.put(p.getUniqueId(), fc.getString("Completed.Parkour"));
             Main.barEnabled.put(p.getUniqueId(), fc.getString("Toggled.Bar"));
+            Main.dailyRewards.put(p.getUniqueId(), fc.getString("DailyRewards.Claimed"));
+            if (Main.firstJoin.get(p.getUniqueId()) == null) {
+                Main.firstJoin.put(p.getUniqueId(), false);
+            }
+            if (!Main.firstJoin.get(p.getUniqueId())) {
+                p.sendMessage(ChatColor.translateAlternateColorCodes('§', "§aWelcome back to §2§lPlasmaNetwork!§a"));
+            }
         } else {
             create(p);
         }
-
     }
 
     public void create(Player p) {
+        if (Main.firstJoin.get(p.getUniqueId()) == null) {
+            Main.firstJoin.put(p.getUniqueId(), true);
+        }
+        Main.firstJoin.put(p.getUniqueId(), true);
         File pfile = getPF(p);
         FileConfiguration fc = YamlConfiguration.loadConfiguration(pfile);
 //        fc.set("Information.UUID", p.getUniqueId().toString());
@@ -247,6 +283,7 @@ public class PlayerFileManager extends BukkitRunnable {
         fc.set("Statistics.Current_Killstreak", 0);
         fc.set("Statistics.Longest_Killstreak", 0);
         fc.set("Statistics.Current_Deathstreak", 0);
+        fc.set("DailyRewards.Claimed", "no");
         Main.pfm_uuid.put(p.getUniqueId(), p.getUniqueId().toString());
         Main.pfm_name.put(p.getUniqueId(), p.getName());
         Main.pfm_joins.put(p.getUniqueId(), 1);
@@ -259,6 +296,7 @@ public class PlayerFileManager extends BukkitRunnable {
         Main.pfm_killstreak.put(p.getUniqueId(), 0);
         Main.pfm_longestKillstreak.put(p.getUniqueId(), 0);
         Main.pfm_deathstreak.put(p.getUniqueId(), 0);
+        p.sendMessage(strings.getMessage("welcomeNew_1") + p.getName() + strings.getMessage("welcomeNew_2"));
         try {
             fc.save(pfile);
         } catch (IOException e) {
@@ -271,6 +309,11 @@ public class PlayerFileManager extends BukkitRunnable {
         File userdata = new File(Bukkit.getServer().getPluginManager().getPlugin("PlasmaHub").getDataFolder(), File.separator + "PlayerData" + File.separator);
         File pfile = new File(userdata, File.separator + p.getUniqueId() + ".yml");
         return pfile;
+    }
+
+    public FileConfiguration getPlayerFile(Player p) {
+        File pfile = getPF(p);
+        return YamlConfiguration.loadConfiguration(pfile);
     }
 
     public void run() {
@@ -301,6 +344,7 @@ public class PlayerFileManager extends BukkitRunnable {
         fc.set("Statistics.Current_Killstreak", Main.pfm_killstreak.get(p.getUniqueId()));
         fc.set("Statistics.Longest_Killstreak", Main.pfm_longestKillstreak.get(p.getUniqueId()));
         fc.set("Statistics.Current_Deathstreak", Main.pfm_deathstreak.get(p.getUniqueId()));
+        fc.set("DailyRewards.Claimed", Main.dailyRewards.get(p.getUniqueId()));
 //        fc.set("Rewards.Count", Main.pfm_dailyReward.get(p.getUniqueId()));
 //        fc.set("Rewards.Dates", Main.pfm_dailyRewardDates.get(p.getUniqueId()));
         try {

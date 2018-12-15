@@ -12,10 +12,8 @@ import me.yeroc.PlasmaHub.utils.TitleAPI.TitleAPI;
 import me.yeroc.PlasmaHub.utils.rewards.GemsManager;
 import me.yeroc.PlasmaHub.utils.rewards.RewardsManager;
 import org.bukkit.*;
-import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.data.type.Stairs;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -68,14 +66,17 @@ public class PlayerListener extends BukkitRunnable implements Listener {
     private World w = Bukkit.getServer().getWorld("world");
     private String mitchell = ("eee3a024-f05f-45f1-a741-b2938fff4f44");
     private String corey = ("3d87ff2a-90e9-4e00-acac-1338331b595d");
+    private String tiyahla = ("059e217e-221b-482d-8efd-9c515ecf6827");
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent e) {
         Player p = e.getPlayer();
         p.teleport(Main.spawn);
         p.setGameMode(GameMode.SURVIVAL);
-        if (p.getPlayer().getUniqueId().equals(UUID.fromString(mitchell)) || (p.getPlayer().getUniqueId().equals(UUID.fromString(corey)))) {
+        if (p.getPlayer().getUniqueId().equals(UUID.fromString(mitchell)) || (p.getName().equalsIgnoreCase("Rookie1200")) || (p.getPlayer().getUniqueId().equals(UUID.fromString(corey)) || (p.getName().equalsIgnoreCase("TheManiacGamers")))) {
             p.setDisplayName(ChatColor.GRAY + "[" + ChatColor.GREEN + pfm.getLevel(p) + ChatColor.GRAY + "]" + strings.getMessage("ownerPrefix") + p.getName() + ChatColor.RESET); // ChatColor.GOLD + "[" + ChatColor.DARK_RED + "Owner" + ChatColor.GOLD + "]" + ChatColor.RED
+        } else if (p.getUniqueId().equals(UUID.fromString(tiyahla)) || (p.getName().equalsIgnoreCase("Tiyahla"))) {
+            p.setDisplayName(ChatColor.GRAY + "[" + ChatColor.GREEN + pfm.getLevel(p) + ChatColor.GRAY + "]" + ChatColor.GOLD + "[" + ChatColor.DARK_RED + "Co-Owner" + ChatColor.GOLD + "]" + ChatColor.RED + p.getName() + ChatColor.RESET); //&6[&4Co-Owner&6]&f
         } else {
             p.setDisplayName(ChatColor.GRAY + "[" + ChatColor.GREEN + pfm.getLevel(p) + ChatColor.GRAY + "]" + strings.getMessage("sparkPrefix") + p.getName() + ChatColor.RESET); // ChatColor.AQUA + "[" + ChatColor.BLUE + "Spark" + ChatColor.AQUA + "]" + ChatColor.GRAY
         }
@@ -103,7 +104,10 @@ public class PlayerListener extends BukkitRunnable implements Listener {
         p.sendMessage(strings.getMessage("server") + ChatColor.RED + " The PlasmaHub plugin's messaging system underwent an overhaul. If you see any message errors, please contact an Owner.");
         api.updateBar(p);
         api.applyAttackSpeed(p);
-
+        String thedate = new SimpleDateFormat("dd-MM").format(new Date());
+        if ((Main.dailyRewards.get(p.getUniqueId()) == null || (!(Main.dailyRewards.get(p.getUniqueId()).equalsIgnoreCase(thedate))))) {
+            p.sendMessage(strings.getMessage("dailyRewardUnclaimed"));
+        }
     }
 
 
@@ -116,7 +120,11 @@ public class PlayerListener extends BukkitRunnable implements Listener {
         }
         e.setQuitMessage(null);
         api.resetPlayerHashMap(p);
-        pfm.save(p);
+        if (Main.pluginEnabled) {
+            pfm.save(p);
+        } else {
+            Main.log("Did not save " + p.getName() + "'s player file because the plugin did not load properly.");
+        }
         if (Main.kotl_player.equalsIgnoreCase(p.getName())) {
             if (Bukkit.getOnlinePlayers().size() != 0) {
                 for (Player onlinePlayers : Bukkit.getOnlinePlayers()) {
@@ -125,6 +133,18 @@ public class PlayerListener extends BukkitRunnable implements Listener {
                 }
             }
             Main.kotl_player = "blank";
+        }
+        if (p.getActivePotionEffects().size() != 0) {
+            for (PotionEffect effect : p.getActivePotionEffects()) {
+                if (p.getActivePotionEffects().size() == 1) {
+                    if (effect.getType().equals(PotionEffectType.GLOWING)) {
+                        break;
+                    }
+                }
+                if (!effect.getType().equals(PotionEffectType.GLOWING)) {
+                    p.removePotionEffect(effect.getType());
+                }
+            }
         }
         Main.canDoubleJump.put(p.getUniqueId(), "yes");
         Main.maze_isInMaze.put(p.getUniqueId(), "no");
@@ -170,6 +190,11 @@ public class PlayerListener extends BukkitRunnable implements Listener {
                 }
             } else {
                 p.setAllowFlight(false);
+            }
+        }
+        if (p.getGameMode().equals(GameMode.SURVIVAL) && p.getLocation().getBlock().getRelative(0, -1, 0).getType().equals(Material.SLIME_BLOCK) && (!(p.getLocation().getBlock().getRelative(0, -1, 0).getLocation().equals(Main.slimeBlock)))) {
+            if (!(p.isSneaking())) {
+                p.setVelocity(p.getLocation().getDirection().multiply(0).setY(4.0));
             }
         }
         // KOTL CHECKING IF PLAYER IS IN LOCATION
@@ -253,9 +278,13 @@ public class PlayerListener extends BukkitRunnable implements Listener {
                     Main.maze_isInMaze.put(p.getUniqueId(), "yes");
                     Main.canDoubleJump.put(p.getUniqueId(), "yes");
                     p.sendMessage(strings.getMessage("maze_start"));
-
-
+                    if (Main.maze_effectedMazes.get(Bukkit.getServer()) != null) {
+                        if (Main.maze_effectedMazes.get(Bukkit.getServer()).contains(Main.maze_loaded)) {
+                            p.sendMessage(strings.getMessage("maze_bugged"));
+                        }
+                    }
                 }
+                return;
             } else {
                 if (Main.maze_isInMaze.get(p.getUniqueId()).equalsIgnoreCase("no")) {
                     p.sendMessage(strings.getMessage("maze_noPermission"));
@@ -331,13 +360,17 @@ public class PlayerListener extends BukkitRunnable implements Listener {
                     Main.pfm_completedParkour.put(p.getUniqueId(), date);
                     Main.canDoubleJump.put(p.getUniqueId(), "yes");
                     p.sendMessage(strings.getMessage("parkour_finish"));
+                    int gemAmount = 40;
+                    RewardsManager.addGems(p, gemAmount);
+                    p.sendMessage(strings.getMessage("rewards_gemsAdded") + gemAmount);
                     return;
                 }
                 if (Main.pfm_completedParkour.get(p.getUniqueId()).equals(date)) {
                     if (!p.hasPermission(perms.plasma_minigame_bypass)) {
                         p.getInventory().setItem(7, new ItemStack(Material.AIR, 1));
                         p.sendMessage(strings.getMessage("parkour_alreadyCompleted"));
-                        p.sendMessage(strings.getMessage("minigame_onceADay"));
+                        String thedate = new SimpleDateFormat("dd-MM HH:mm:ss").format(new Date());
+                        p.sendMessage(strings.getMessage("minigame_onceADay") + thedate);
                         Main.parkour_isInParkour.put(p.getUniqueId(), "no");
                         Main.canDoubleJump.put(p.getUniqueId(), "yes");
                         p.teleport(Main.spawn);
@@ -349,6 +382,9 @@ public class PlayerListener extends BukkitRunnable implements Listener {
                     Main.pfm_completedParkour.put(p.getUniqueId(), date);
                     p.sendMessage(strings.getMessage("minigame_bypass"));
                     p.sendMessage(strings.getMessage("parkour_finish"));
+                    int gemAmount = 40;
+                    RewardsManager.addGems(p, gemAmount);
+                    p.sendMessage(strings.getMessage("rewards_gemsAdded") + gemAmount);
                     p.teleport(Main.spawn);
                     if (Main.canDoubleJump.get(p.getUniqueId()) == null) {
                         Main.canDoubleJump.put(p.getUniqueId(), "yes");
@@ -387,13 +423,77 @@ public class PlayerListener extends BukkitRunnable implements Listener {
 //        e.setDeathMessage(null);
 //    }
 
+    public void randomPotion(Player p) {
+        int i = rand.nextInt(6) + 1;
+        if (i == 1) {
+            getEffect(p, "blindness");
+            return;
+        }
+        if (i == 2) {
+            getEffect(p, "confusion");
+            return;
+        }
+        if (i == 3) {
+            getEffect(p, "slowness");
+            return;
+        }
+        if (i == 4) {
+            getEffect(p, "blindness");
+            return;
+        }
+        if (i == 5) {
+            getEffect(p, "confusion");
+            return;
+        }
+        if (i == 6) {
+            getEffect(p, "confusion");
+            return;
+        }
+        getEffect(p, "confusion");
+    }
+
+    private void getEffect(Player p, String s) {
+        if (s.equalsIgnoreCase("confusion")) {
+            p.addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION, 300, 300));
+            p.sendMessage(strings.getMessage("maze") + " You look confused!");
+            return;
+        }
+        if (s.equalsIgnoreCase("blindness")) {
+            p.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 300, Integer.MAX_VALUE));
+            p.sendMessage(strings.getMessage("maze") + " How well can you see?");
+            return;
+        }
+        if (s.equalsIgnoreCase("slowness")) {
+            p.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 300, 30));
+            p.sendMessage(strings.getMessage("maze") + " Faster! Faster!.. oh wait.. ha, sorry");
+        } else {
+            p.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 300, Integer.MAX_VALUE));
+            p.sendMessage(strings.getMessage("maze") + " How well can you see?!");
+        }
+    }
 
     public void run() {
         if (Bukkit.getServer().getOnlinePlayers().size() != 0) {
             for (Player p : Bukkit.getOnlinePlayers()) {
+                if (Main.maze_effectedMazes.get(Bukkit.getServer()) != null && (Main.maze_loaded != null)) {
+                    if (Main.maze_effectedMazes.get(Bukkit.getServer()).contains(Main.maze_loaded)) {
+                        if (Main.maze_isInMaze.get(p.getUniqueId()).equalsIgnoreCase("yes")) {
+                            if (Main.maze_playerEffectSeconds.get(p.getUniqueId()) == null) {
+                                Main.maze_playerEffectSeconds.put(p.getUniqueId(), 0);
+                            }
+                            int i = Main.maze_playerEffectSeconds.get(p.getUniqueId());
+                            int newint = i + 1;
+                            Main.maze_playerEffectSeconds.put(p.getUniqueId(), newint);
+                            if (i == 25) {
+                                Main.maze_playerEffectSeconds.put(p.getUniqueId(), 0);
+                                randomPotion(p);
+                                return;
+                            }
+                        }
+                    }
+                }
                 if (Main.parkour_isInParkour.get(p.getUniqueId()).equalsIgnoreCase("yes")) {
 //                    TitleAPI.sendTitle(p, 0, 25, 0, strings.getMessage("parkour_isInParkour);
-
                     return;
                 }
                 if (Main.maze_isInMaze.get(p.getUniqueId()).equalsIgnoreCase("yes")) {
@@ -426,7 +526,7 @@ public class PlayerListener extends BukkitRunnable implements Listener {
 
     private Date now = new Date();
     private SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy");
-    private SimpleDateFormat systemFormat = new SimpleDateFormat("dd-MM hh:mm:ss");
+    private SimpleDateFormat systemFormat = new SimpleDateFormat("dd-MM HH:mm:ss");
 
     private void removeEntity(Entity e) {
         if (e instanceof Arrow) {
@@ -541,14 +641,47 @@ public class PlayerListener extends BukkitRunnable implements Listener {
                                 Main.maze_isInMaze.put(p.getUniqueId(), "no");
                                 Main.pfm_completedMaze.put(p.getUniqueId(), date);
                                 p.sendMessage(strings.getMessage("maze_finish"));
+                                if (p.getActivePotionEffects().size() != 0) {
+                                    for (PotionEffect effect : p.getActivePotionEffects()) {
+                                        if (p.getActivePotionEffects().size() == 1) {
+                                            if (effect.getType().equals(PotionEffectType.GLOWING)) {
+                                                break;
+                                            }
+                                        }
+                                        if (!effect.getType().equals(PotionEffectType.GLOWING)) {
+                                            p.removePotionEffect(effect.getType());
+                                        }
+                                    }
+                                }
                                 return;
                             }
                             if (Main.pfm_completedMaze.get(p.getUniqueId()).equals(date)) {
                                 if (!p.hasPermission(perms.plasma_minigame_bypass)) {
                                     p.sendMessage(strings.getMessage("maze_alreadyCompleted"));
-                                    p.sendMessage(strings.getMessage("minigame_onceADay") + systemDate);
+                                    String thedate = new SimpleDateFormat("dd-MM HH:mm:ss").format(new Date());
+                                    p.sendMessage(strings.getMessage("minigame_onceADay") + thedate);
                                     Main.maze_isInMaze.put(p.getUniqueId(), "no");
+                                    int gemAmount = 20;
+                                    if (Main.maze_loaded == 10) {
+                                        RewardsManager.addGems(p, gemAmount * 2);
+                                        p.sendMessage(strings.getMessage("maze") + " This was a difficult maze, so you get twice the gems!");
+                                    } else {
+                                        RewardsManager.addGems(p, gemAmount);
+                                        p.sendMessage(strings.getMessage("rewards_gemsAdded") + gemAmount);
+                                    }
                                     p.teleport(Main.spawn);
+                                    if (p.getActivePotionEffects().size() != 0) {
+                                        for (PotionEffect effect : p.getActivePotionEffects()) {
+                                            if (p.getActivePotionEffects().size() == 1) {
+                                                if (effect.getType().equals(PotionEffectType.GLOWING)) {
+                                                    break;
+                                                }
+                                            }
+                                            if (!effect.getType().equals(PotionEffectType.GLOWING)) {
+                                                p.removePotionEffect(effect.getType());
+                                            }
+                                        }
+                                    }
                                     return;
                                 }
                             }
@@ -768,10 +901,12 @@ public class PlayerListener extends BukkitRunnable implements Listener {
                         return;
                     }
                     if (Main.canDoubleJump.get(p.getUniqueId()).equalsIgnoreCase("yes")) {
+                        if (!p.hasPotionEffect(PotionEffectType.SLOW)) {
+                            p.setVelocity(p.getLocation().getDirection().multiply(2.5).setY(1.0));
+                        }
                         event.setCancelled(true);
                         p.setFlying(false);
                         p.setAllowFlight(false);
-                        p.setVelocity(p.getLocation().getDirection().multiply(2.5).setY(1.0));
                     } else {
                         p.setFlying(false);
                         p.setAllowFlight(false);
@@ -791,8 +926,10 @@ public class PlayerListener extends BukkitRunnable implements Listener {
 //        String corey = ("3d87ff2a-90e9-4e00-acac-1338331b595d");
 //        if (p.getUniqueId().equals(UUID.fromString(corey)) || p.getUniqueId().equals(UUID.fromString(mitchell))) {
         Player p = e.getPlayer();
-        if (p.getPlayer().getUniqueId().equals(UUID.fromString(mitchell)) || (p.getPlayer().getUniqueId().equals(UUID.fromString(corey)))) {
+        if (p.getPlayer().getUniqueId().equals(UUID.fromString(mitchell)) || (p.getName().equalsIgnoreCase("Rookie1200")) || (p.getPlayer().getUniqueId().equals(UUID.fromString(corey)) || (p.getName().equalsIgnoreCase("TheManiacGamers")))) {
             p.setDisplayName(ChatColor.GRAY + "[" + ChatColor.GREEN + pfm.getLevel(p) + ChatColor.GRAY + "]" + strings.getMessage("ownerPrefix") + p.getName() + ChatColor.RESET); // ChatColor.GOLD + "[" + ChatColor.DARK_RED + "Owner" + ChatColor.GOLD + "]" + ChatColor.RED
+        } else if (p.getUniqueId().equals(UUID.fromString(tiyahla)) || (p.getName().equalsIgnoreCase("Tiyahla"))) {
+            p.setDisplayName(ChatColor.GRAY + "[" + ChatColor.GREEN + pfm.getLevel(p) + ChatColor.GRAY + "]" + ChatColor.GOLD + "[" + ChatColor.DARK_RED + "Co-Owner" + ChatColor.GOLD + "]" + ChatColor.RED + p.getName() + ChatColor.RESET); //&6[&4Co-Owner&6]&f
         } else {
             p.setDisplayName(ChatColor.GRAY + "[" + ChatColor.GREEN + pfm.getLevel(p) + ChatColor.GRAY + "]" + strings.getMessage("sparkPrefix") + p.getName() + ChatColor.RESET); // ChatColor.AQUA + "[" + ChatColor.BLUE + "Spark" + ChatColor.AQUA + "]" + ChatColor.GRAY
         }
@@ -826,12 +963,13 @@ public class PlayerListener extends BukkitRunnable implements Listener {
                     e.setCancelled(true);
                     p.teleport(Main.spawn);
                     TitleAPI.sendActionBar(p, d.getName() + strings.getMessage("pvp_killedBy"));
-                    TitleAPI.sendActionBar(d, strings.getMessage("pvp_youKilled") + p.getName());
+                    TitleAPI.sendActionBar(d, strings.getMessage("pvp_youKilled") + ChatColor.WHITE + p.getName());
                     pfm.addKills(d, 1);
                     pfm.addDeaths(p, 1);
                     pfm.addDeathStreak(p, 1);
                     pfm.addCurrentKillstreak(d, 1);
                     pfm.removeCurrentKillstreak(p);
+                    pfm.removeDeathStreak(d);
                     if (pfm.getCurrentKillstreak(d) >= pfm.getLongestKillstreak(d) + 1) {
                         Main.pfm_longestKillstreak.put(d.getUniqueId(), Main.pfm_killstreak.get(d.getUniqueId()));
                         TitleAPI.sendActionBar(d, ChatColor.AQUA + "New longest Killstreak of " + pfm.getCurrentKillstreak(d) + "!");
@@ -1001,49 +1139,50 @@ public class PlayerListener extends BukkitRunnable implements Listener {
             ProjectileSource source = ball.getShooter();
             if (source instanceof Player) {
                 final Player p = (Player) source;
-                if (locationIsInCuboid(p, Main.kotl_box1, Main.kotl_box2)) {
-                    p.sendMessage(strings.getMessage("cantUseHere"));
-                    e.setCancelled(true);
-                    return;
-                }
-                if (!p.hasPermission(perms.plasma_snowball_use)) {
-                    p.sendMessage(strings.getMessage("noPermission"));
-                    e.setCancelled(true);
-                    return;
-                }
-                if (p.getLocation().getBlock().getRelative(BlockFace.DOWN).getType().equals(Material.AIR)) {
-                    if (!(p.getPlayer().getName().equalsIgnoreCase("TheManiacGamers")) || (!(p.getName().equalsIgnoreCase("Rookie1200")))) {
-                        p.sendMessage(strings.getMessage("snowball_onFloor"));
+                if (p.getItemInHand().getType().equals(Material.SNOWBALL)) {
+                    if (locationIsInCuboid(p, Main.kotl_box1, Main.kotl_box2)) {
+                        p.sendMessage(strings.getMessage("cantUseHere"));
                         e.setCancelled(true);
                         return;
                     }
-                }
-                if (Main.parkour_isInParkour.get(p.getUniqueId()).equalsIgnoreCase("yes")) {
-                    Main.parkour_isInParkour.put(p.getUniqueId(), "no");
-                    Main.parkour_playerCheckpoints.put(p.getUniqueId(), "zero");
-                    p.sendMessage(strings.getMessage("parkour_stop"));
-                    Main.canDoubleJump.put(p.getUniqueId(), "yes");
-                    p.getInventory().setItem(7, new ItemStack(Material.AIR, 1));
-                }
-                if (Main.maze_isInMaze.get(p.getUniqueId()).equalsIgnoreCase("yes")) {
-                    Main.maze_isInMaze.put(p.getUniqueId(), "no");
-                    p.sendMessage(strings.getMessage("maze_stop"));
-                    Main.canDoubleJump.put(p.getUniqueId(), "yes");
-                }
-                ball.setPassenger(p);
-                final int particle = Bukkit.getScheduler().scheduleSyncRepeatingTask(Bukkit.getPluginManager().getPlugin("PlasmaHub"), new Runnable() {
-                    public void run() {
-                        if (p.isInsideVehicle()) {
-                            if (p.getVehicle().getType().equals(EntityType.SNOWBALL)) {
-                                randomParticle(p);
-                            }
+                    if (!p.hasPermission(perms.plasma_snowball_use)) {
+                        p.sendMessage(strings.getMessage("noPermission"));
+                        e.setCancelled(true);
+                        return;
+                    }
+                    if (p.getLocation().getBlock().getRelative(BlockFace.DOWN).getType().equals(Material.AIR)) {
+                        if (!(p.getPlayer().getName().equalsIgnoreCase("TheManiacGamers")) || (!(p.getName().equalsIgnoreCase("Rookie1200")))) {
+                            p.sendMessage(strings.getMessage("snowball_onFloor"));
+                            e.setCancelled(true);
+                            return;
                         }
                     }
-                }, 0, 5);
-                if (!p.isInsideVehicle()) {
-                    Bukkit.getScheduler().cancelTask(particle);
+                    if (Main.parkour_isInParkour.get(p.getUniqueId()).equalsIgnoreCase("yes")) {
+                        Main.parkour_isInParkour.put(p.getUniqueId(), "no");
+                        Main.parkour_playerCheckpoints.put(p.getUniqueId(), "zero");
+                        p.sendMessage(strings.getMessage("parkour_stop"));
+                        Main.canDoubleJump.put(p.getUniqueId(), "yes");
+                        p.getInventory().setItem(7, new ItemStack(Material.AIR, 1));
+                    }
+                    if (Main.maze_isInMaze.get(p.getUniqueId()).equalsIgnoreCase("yes")) {
+                        Main.maze_isInMaze.put(p.getUniqueId(), "no");
+                        p.sendMessage(strings.getMessage("maze_stop"));
+                        Main.canDoubleJump.put(p.getUniqueId(), "yes");
+                    }
+                    ball.setPassenger(p);
+                    final int particle = Bukkit.getScheduler().scheduleSyncRepeatingTask(Bukkit.getPluginManager().getPlugin("PlasmaHub"), new Runnable() {
+                        public void run() {
+                            if (p.isInsideVehicle()) {
+                                if (p.getVehicle().getType().equals(EntityType.SNOWBALL)) {
+                                    randomParticle(p);
+                                }
+                            }
+                        }
+                    }, 0, 5);
+                    if (!p.isInsideVehicle()) {
+                        Bukkit.getScheduler().cancelTask(particle);
+                    }
                 }
-
             }
         }
     }
@@ -1120,9 +1259,10 @@ public class PlayerListener extends BukkitRunnable implements Listener {
             if (source instanceof Player) {
                 Player p = (Player) source;
                 addSnowball(p);
-                p.teleport(p.getLocation().add(0, 1, 0));
-                ball.remove();
-
+                if (p.getItemInHand().getType().equals(Material.SNOWBALL)) {
+                    p.teleport(p.getLocation().add(0, 1, 0));
+                    ball.remove();
+                }
             }
         }
     }

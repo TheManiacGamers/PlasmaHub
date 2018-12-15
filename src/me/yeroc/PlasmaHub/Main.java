@@ -3,7 +3,6 @@ package me.yeroc.PlasmaHub;
 import com.sk89q.bukkit.util.CommandsManagerRegistration;
 import com.sk89q.minecraft.util.commands.ChatColor;
 import com.sk89q.minecraft.util.commands.*;
-import me.ryandw11.ultrabar.api.UltraBarAPI;
 import me.yeroc.PlasmaHub.listeners.LaunchPads;
 import me.yeroc.PlasmaHub.listeners.WorldListener;
 import me.yeroc.PlasmaHub.managers.Configs;
@@ -17,10 +16,6 @@ import me.yeroc.PlasmaHub.utils.rewards.RewardsManager;
 import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.*;
-import org.bukkit.boss.BarColor;
-import org.bukkit.boss.BarFlag;
-import org.bukkit.boss.BarStyle;
-import org.bukkit.boss.BossBar;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
@@ -30,12 +25,11 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class Main extends JavaPlugin implements Listener {
     public static Main instance;
@@ -78,13 +72,16 @@ public class Main extends JavaPlugin implements Listener {
     public static Location maze_1_4_finish = new Location(w, 860, 2, 512); // 860 512
     public static Location maze_5_finish = new Location(w, 846, 2, 526); // 846 526
     public static Location maze_6_finish = new Location(w, 847, 2, 499); // 847 499
-    public static Location mazebox1 = new Location(w, 876, 5, 528);
+    public static Location mazebox1 = new Location(w, 876, 10, 528);
     public static Location mazebox2 = new Location(w, 844, 1, 495);
+    public static HashMap<Server, ArrayList<Integer>> maze_effectedMazes = new HashMap<>();
+    public static HashMap<UUID, Integer> maze_playerEffectSeconds = new HashMap<>();
     public static Integer maze_loaded = 0;
     public static Integer mazes = 0;
+    public static Location slimeBlock = new Location(w, 919, 2, 533);
 //    public static String loadedMaze = "Maze_1";
 
-    // PARKOUR
+    // PARKOUR //(919, 2, 533
     public static Location parkour_startBlock = new Location(w, 950, 4, 602);
     public static Location parkour_chp1block = new Location(w, 945, 14, 613);
     public static Location parkour_chp2block = new Location(w, 954, 27, 584);
@@ -130,6 +127,8 @@ public class Main extends JavaPlugin implements Listener {
 
     public static HashMap<String, String> messages = new HashMap<>();
 
+    public static HashMap<UUID, String> dailyRewards = new HashMap<>();
+    public static HashMap<UUID, Boolean> firstJoin = new HashMap<>();
 
     // GET INSTANCES
     private API api = API.getInstance();
@@ -141,6 +140,8 @@ public class Main extends JavaPlugin implements Listener {
     private PlayerFileManager pfm = PlayerFileManager.getInstance();
     private AutoBroadcast ab = AutoBroadcast.getInstance();
     public static boolean pluginEnabled = false;
+    public static boolean effectedMazesLoaded = false;
+    private int maze_chance = 0;
 
     public void onEnable() {
         plugin = this;
@@ -167,6 +168,9 @@ public class Main extends JavaPlugin implements Listener {
                     Bukkit.broadcastMessage(ChatColor.RED + "PLUGIN MIGHT NOT HAVE STARTED PROPERLY. CONTACT AN OWNER.");
                 } else {
                     Main.log("Plugin was loaded, according to the delayed check.");
+                }
+                if (effectedMazesLoaded) {
+                    Main.log("This reload contains some buggy mazes.");
                 }
             }
         }, 100L);
@@ -197,12 +201,43 @@ public class Main extends JavaPlugin implements Listener {
             ab.setDefaults();
             configs.saveConfig();
         }
-        autoBroadcastTime = configs.getConfig().getInt("AutoBroadcast.Interval");
+        if (configs.getConfig().get("Maze.BuggedChance") == null) {
+            configs.getConfig().set("Maze.BuggedChance", 50);
+        }
+        maze_chance = configs.getConfig().getInt("Maze.BuggedChance");
         Main.log(strings.getMessage("autoBroadcastTimeSet") + autoBroadcastTime);
         ab.loadMessages();
         maze_loaded = configs.getConfig().getInt("Maze.Loaded");
         reloadConfirmed.put(Bukkit.getServer(), "empty");
         setupChat();
+        Random random = new Random();
+        int randomChance = 100;
+        final int RANDOM_NUMBER = random.nextInt(randomChance);
+        if (RANDOM_NUMBER <= maze_chance) {
+            log("A few buggy mazes are being loaded ;)");
+            int amount = mazes / 2;
+            if (amount >= 2) {
+                for (int newi = 1; newi < amount; ) {
+                    int i = random.nextInt(mazes);
+                    if (i == 0 || i == 10) {
+                        continue;
+                    }
+                    if (maze_effectedMazes.get(Bukkit.getServer()) == null) {
+                        ArrayList<Integer> l = new ArrayList<>();
+                        l.add(i);
+                        maze_effectedMazes.put(Bukkit.getServer(), l);
+                        log("A buggy maze: maze #" + i);
+                        newi++;
+                        continue;
+                    }
+                    if (!(maze_effectedMazes.get(Bukkit.getServer()).contains(i))) {
+                        maze_effectedMazes.get(Bukkit.getServer()).add(i);
+                        log("A buggy maze: maze #" + i);
+                        newi++;
+                    }
+                }
+            }
+        }
         if (Bukkit.getOnlinePlayers().size() != 0) {
             for (final Player p : Bukkit.getOnlinePlayers()) {
                 Main.canDoubleJump.put(p.getUniqueId(), "yes");
@@ -210,12 +245,16 @@ public class Main extends JavaPlugin implements Listener {
                 Main.parkour_isInParkour.put(p.getUniqueId(), "no");
                 Main.parkour_playerCheckpoints.put(p.getUniqueId(), "zero");
                 pfm.load(p);
+                if (Main.maze_effectedMazes.get(Bukkit.getServer()) != null) {
+                    p.sendMessage(strings.getMessage("maze") + ChatColor.RED + " Uh oh, there could be a chance your maze is bugged!");
+                }
                 if (p.getGameMode().equals(GameMode.SURVIVAL)) {
                     p.getInventory().clear();
                     api.resetInventory(p);
                     p.setFlying(false);
                     p.setAllowFlight(true);
                     p.sendMessage(strings.getMessage("inventoryResetReload"));
+
                     Bukkit.getScheduler().scheduleSyncDelayedTask(this, new BukkitRunnable() {
                         @Override
                         public void run() {
@@ -223,7 +262,7 @@ public class Main extends JavaPlugin implements Listener {
                                 p.sendMessage(ChatColor.RED + "DUE TO THIS, YOUR PLAYER FILE MAY HAVE CORRUPTED.");
                             }
                         }
-                    }, 100L);
+                    }, 120L);
                 }
                 api.applyAttackSpeed(p);
                 p.setPlayerListHeader("                           ");
@@ -232,6 +271,9 @@ public class Main extends JavaPlugin implements Listener {
             Bukkit.broadcastMessage(strings.getMessage("serverReloaded"));
         }
         pluginEnabled = true;
+        if (Main.maze_effectedMazes.get(Bukkit.getServer()) != null) {
+            effectedMazesLoaded = true;
+        }
         log("Enabled successfully!");
     }
 
@@ -241,13 +283,31 @@ public class Main extends JavaPlugin implements Listener {
                 if (parkour_isInParkour.get(p.getUniqueId()).equalsIgnoreCase("yes")) {
                     parkour_isInParkour.put(p.getUniqueId(), "no");
                     parkour_playerCheckpoints.put(p.getUniqueId(), "zero");
+                    p.teleport(Main.spawn);
                     p.sendMessage(strings.getMessage("parkour_left_reload"));
                 }
                 if (maze_isInMaze.get(p.getUniqueId()).equalsIgnoreCase("yes")) {
                     maze_isInMaze.put(p.getUniqueId(), "no");
                     p.sendMessage(strings.getMessage("maze_left_reload"));
+                    p.teleport(Main.spawn);
                 }
-                pfm.save(p);
+                if (p.getActivePotionEffects().size() != 0) {
+                    for (PotionEffect effect : p.getActivePotionEffects()) {
+                        if (p.getActivePotionEffects().size() == 1) {
+                            if (effect.getType().equals(PotionEffectType.GLOWING)) {
+                                break;
+                            }
+                        }
+                        if (!effect.getType().equals(PotionEffectType.GLOWING)) {
+                            p.removePotionEffect(effect.getType());
+                        }
+                    }
+                }
+                if (Main.pluginEnabled) {
+                    pfm.save(p);
+                } else {
+                    Main.log("Did not save " + p.getName() + "'s player file because the plugin did not load properly.");
+                }
             }
         }
         configs.getConfig().set("Maze.Loaded", maze_loaded);

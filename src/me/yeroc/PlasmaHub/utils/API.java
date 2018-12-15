@@ -150,24 +150,22 @@ public class API extends BukkitRunnable {
     }
 
     private void addSword(Player p) {
-        if (p.getGameMode().equals(GameMode.SURVIVAL)) {
-            ItemStack Sword = new ItemStack(Material.DIAMOND_SWORD, 1);
-            ItemMeta SwordMeta = Sword.getItemMeta();
-            SwordMeta.setDisplayName(com.sk89q.minecraft.util.commands.ChatColor.GREEN + "Enable PvP");
-            SwordMeta.setUnbreakable(true);
-            List<String> lore = new ArrayList<>();
-            lore.add(ChatColor.GREEN + "Hold me to enable PvP and give yourself armour!");
-            if (!p.hasPermission(perms.plasma_pvp_use)) {
-                lore.add(ChatColor.GREEN + " ");
-                lore.add(ChatColor.AQUA + "Permission: " + ChatColor.RED + "NO");
-            } else {
-                lore.add(ChatColor.GREEN + " ");
-                lore.add(ChatColor.AQUA + "Permission: " + ChatColor.GREEN + "YES");
-            }
-            SwordMeta.setLore(lore);
-            Sword.setItemMeta(SwordMeta);
-            p.getInventory().setItem(8, Sword);
+        ItemStack Sword = new ItemStack(Material.DIAMOND_SWORD, 1);
+        ItemMeta SwordMeta = Sword.getItemMeta();
+        SwordMeta.setDisplayName(com.sk89q.minecraft.util.commands.ChatColor.GREEN + "Enable PvP");
+        SwordMeta.setUnbreakable(true);
+        List<String> lore = new ArrayList<>();
+        lore.add(ChatColor.GREEN + "Hold me to enable PvP and give yourself armour!");
+        if (!p.hasPermission(perms.plasma_pvp_use)) {
+            lore.add(ChatColor.GREEN + " ");
+            lore.add(ChatColor.AQUA + "Permission: " + ChatColor.RED + "NO");
+        } else {
+            lore.add(ChatColor.GREEN + " ");
+            lore.add(ChatColor.AQUA + "Permission: " + ChatColor.GREEN + "YES");
         }
+        SwordMeta.setLore(lore);
+        Sword.setItemMeta(SwordMeta);
+        p.getInventory().setItem(8, Sword);
     }
 
     private void addGadgetMenu(Player p) {

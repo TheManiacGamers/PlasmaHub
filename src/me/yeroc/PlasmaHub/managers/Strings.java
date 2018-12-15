@@ -6,6 +6,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 /**
  * Created by Corey on 28/11/2018.
  */
@@ -177,6 +180,19 @@ public class Strings {
     private String PlasmaNetwork = ("§7-=[ §2§lPlasmaNetwork §7]=-");
     private String stats_killstreak = ("§aKillstreak: ");
     private String stats_longestKillstreak = ("§aLongest Killstreak: ");
+    private String maze_bugged = ("{MAZE} §aThis maze is §criddled§a with bugs. You may see §csomething§a, you may see §cnothing§a, you may even see things with a §cbit of nausea§a. Good luck.");
+    private String maze_loaded_bugged = ("{MAZE} §aThe maze you just loaded is §criddled§a with bugs.");
+    private String maze_cannotBeZero = ("{MAZE} §cYou cannot use the number 0 here. 1 and above.");
+    private String maze_mazeAmount = ("{MAZE} §aThere are a total of: ");
+    private String rewards = ("§0[§b§lRewards§0]§a ");
+    private String dailyRewardsClaimed = ("{REWARDS} §aYou claimed your reward for the: §c{DATE}");
+    private String dailyRewardUnclaimed = ("{REWARDS} §aYou can type /dr to claim your daily reward!");
+    private String dailyRewardsAlreadyClaimed = ("{REWARDS} §cYou can only claim this once a day. Come back later. Current time: ");
+    private String welcome = ("§aWelcome to §2§lPlasmaNetwork!§a");
+    private String welcomeBack = ("§aWelcome back to §2§lPlasmaNetwork!§a");
+    private String welcomeNew_1 = ("§2§lPlasmaNetwork§a welcomes ");
+    private String welcomeNew_2 = ("§a to the server!");
+    private String rewards_gemsAdded = ("{REWARDS} §aYou earned more gems! Added to your account: §c");
 
     // prefix: text
     public String getMessage(String message) {
@@ -226,6 +242,16 @@ public class Strings {
                             Main.messages.put("minigames", minigames);
                         }
                         s = s.replace("{MINIGAMES}", Main.messages.get("minigames"));
+                    }
+                    if (s.contains("{REWARDS}")) {
+                        if (Main.messages.get("rewards") == null) {
+                            Main.messages.put("rewards", rewards);
+                        }
+                        s = s.replace("{REWARDS}", Main.messages.get("rewards"));
+                    }
+                    if (s.contains("{DATE}")) {
+                        String thedate = new SimpleDateFormat("dd-MM").format(new Date());
+                        s = s.replace("{DATE}", thedate);
                     }
                     return s;
                 } else {
@@ -438,6 +464,19 @@ public class Strings {
             configs.getMessages().set("Messages.PlasmaNetwork", PlasmaNetwork);
             configs.getMessages().set("Messages.stats_killstreak", stats_killstreak);
             configs.getMessages().set("Messages.stats_longestKillstreak", stats_longestKillstreak);
+            configs.getMessages().set("Messages.maze_bugged", maze_bugged);
+            configs.getMessages().set("Messages.maze_loaded_bugged", maze_loaded_bugged);
+            configs.getMessages().set("Messages.maze_cannotBeZero", maze_cannotBeZero);
+            configs.getMessages().set("Messages.maze_mazeAmount", maze_mazeAmount);
+            configs.getMessages().set("Messages.rewards", rewards);
+            configs.getMessages().set("Messages.dailyRewardsClaimed", dailyRewardsClaimed);
+            configs.getMessages().set("Messages.dailyRewardUnclaimed", dailyRewardUnclaimed);
+            configs.getMessages().set("Messages.dailyRewardsAlreadyClaimed", dailyRewardsAlreadyClaimed);
+            configs.getMessages().set("Messages.welcome", welcome);
+            configs.getMessages().set("Messages.welcomeBack", welcomeBack);
+            configs.getMessages().set("Messages.welcomeNew_1", welcomeNew_1);
+            configs.getMessages().set("Messages.welcomeNew_2", welcomeNew_2);
+            configs.getMessages().set("Messages.rewards_gemsAdded", rewards_gemsAdded);
             configs.saveMessages();
         }
         for (String s : configs.getMessages().getStringList("Messages")) {
@@ -1249,6 +1288,71 @@ public class Strings {
                     configs.getMessages().set("Messages." + s, stats_longestKillstreak);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, stats_longestKillstreak);
+                }
+                if (s.equalsIgnoreCase("maze_bugged")) {
+                    configs.getMessages().set("Messages." + s, maze_bugged);
+                    Main.log("Set default for: " + s + ".");
+                    Main.messages.put(s, maze_bugged);
+                }
+                if (s.equalsIgnoreCase("maze_loaded_bugged")) {
+                    configs.getMessages().set("Messages." + s, maze_loaded_bugged);
+                    Main.log("Set default for: " + s + ".");
+                    Main.messages.put(s, maze_loaded_bugged);
+                }
+                if (s.equalsIgnoreCase("maze_cannotBeZero")) {
+                    configs.getMessages().set("Messages." + s, maze_cannotBeZero);
+                    Main.log("Set default for: " + s + ".");
+                    Main.messages.put(s, maze_cannotBeZero);
+                }
+                if (s.equalsIgnoreCase("maze_mazeAmount")) {
+                    configs.getMessages().set("Messages." + s, maze_mazeAmount);
+                    Main.log("Set default for: " + s + ".");
+                    Main.messages.put(s, maze_mazeAmount);
+                }
+                if (s.equalsIgnoreCase("rewards")) {
+                    configs.getMessages().set("Messages." + s, rewards);
+                    Main.log("Set default for: " + s + ".");
+                    Main.messages.put(s, rewards);
+                }
+                if (s.equalsIgnoreCase("dailyRewardsClaimed")) {
+                    configs.getMessages().set("Messages." + s, dailyRewardsClaimed);
+                    Main.log("Set default for: " + s + ".");
+                    Main.messages.put(s, dailyRewardsClaimed);
+                }
+                if (s.equalsIgnoreCase("dailyRewardUnclaimed")) {
+                    configs.getMessages().set("Messages." + s, dailyRewardUnclaimed);
+                    Main.log("Set default for: " + s + ".");
+                    Main.messages.put(s, dailyRewardUnclaimed);
+                }
+                if (s.equalsIgnoreCase("dailyRewardsAlreadyClaimed")) {
+                    configs.getMessages().set("Messages." + s, dailyRewardsAlreadyClaimed);
+                    Main.log("Set default for: " + s + ".");
+                    Main.messages.put(s, dailyRewardsAlreadyClaimed);
+                }
+                if (s.equalsIgnoreCase("welcome")) {
+                    configs.getMessages().set("Messages." + s, welcome);
+                    Main.log("Set default for: " + s + ".");
+                    Main.messages.put(s, welcome);
+                }
+                if (s.equalsIgnoreCase("welcomeBack")) {
+                    configs.getMessages().set("Messages." + s, welcomeBack);
+                    Main.log("Set default for: " + s + ".");
+                    Main.messages.put(s, welcomeBack);
+                }
+                if (s.equalsIgnoreCase("welcomeNew_1")) {
+                    configs.getMessages().set("Messages." + s, welcomeNew_1);
+                    Main.log("Set default for: " + s + ".");
+                    Main.messages.put(s, welcomeNew_1);
+                }
+                if (s.equalsIgnoreCase("welcomeNew_2")) {
+                    configs.getMessages().set("Messages." + s, welcomeNew_2);
+                    Main.log("Set default for: " + s + ".");
+                    Main.messages.put(s, welcomeNew_2);
+                }
+                if (s.equalsIgnoreCase("rewards_gemsAdded")) {
+                    configs.getMessages().set("Messages." + s, rewards_gemsAdded);
+                    Main.log("Set default for: " + s + ".");
+                    Main.messages.put(s, rewards_gemsAdded);
                 }
             }
         }

@@ -28,14 +28,22 @@ public class PermissionsManager {
     public String plasma_command_spawn = ("plasma.command.spawn");
     public String plasma_command_reload = ("plasma.command.reload");
     public String plasma_command_stats = ("plasma.command.stats");
+    public String plasma_command_stats_others = ("plasma.command.stats.others");
     public String plasma_command_resetAllInventory = ("plasma.command.resetallinventory");
     public String plasma_command_clearlag = ("plasma.command.clearlag");
     public String plasma_command_bar = ("plasma.command.bar");
+    public String plasma_dailyrewards = ("plasma.dailyrewards");
+    public String plasma_dailyrewards_reset = ("plasma.dailyrewards.reset");
+    public String plasma_dailyrewards_reset_others = ("plasma.dailyrewards.reset.others");
 
     public String plasma_gamemode_creative = ("plasma.gamemode.creative");
     public String plasma_gamemode_survival = ("plasma.gamemode.survival");
-    public String plasma_gamemode_advemture = ("plasma.gamemode.adventure");
+    public String plasma_gamemode_adventure = ("plasma.gamemode.adventure");
     public String plasma_gamemode_spectator = ("plasma.gamemode.spectator");
+    public String plasma_gamemode_creative_other = ("plasma.gamemode.creative.other");
+    public String plasma_gamemode_survival_other = ("plasma.gamemode.survival.other");
+    public String plasma_gamemode_adventure_other = ("plasma.gamemode.adventure.other");
+    public String plasma_gamemode_spectator_other = ("plasma.gamemode.spectator.other");
     public String plasma_config_reload = ("plasma.config.reload");
     public String plasma_maze_add = ("plasma.command.maze.add");
     public String plasma_maze_load = ("plasma.command.maze.load");
