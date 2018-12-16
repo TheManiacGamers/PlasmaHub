@@ -5,10 +5,7 @@ import com.sk89q.minecraft.util.commands.ChatColor;
 import com.sk89q.minecraft.util.commands.*;
 import me.yeroc.PlasmaHub.listeners.LaunchPads;
 import me.yeroc.PlasmaHub.listeners.WorldListener;
-import me.yeroc.PlasmaHub.managers.Configs;
-import me.yeroc.PlasmaHub.managers.PermissionsManager;
-import me.yeroc.PlasmaHub.managers.PlayerFileManager;
-import me.yeroc.PlasmaHub.managers.Strings;
+import me.yeroc.PlasmaHub.managers.*;
 import me.yeroc.PlasmaHub.serverselector.ServerSelector;
 import me.yeroc.PlasmaHub.utils.API;
 import me.yeroc.PlasmaHub.utils.rewards.GemsManager;
@@ -29,6 +26,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.io.File;
 import java.util.*;
 
 public class Main extends JavaPlugin implements Listener {
@@ -139,9 +137,19 @@ public class Main extends JavaPlugin implements Listener {
     private GemsManager gems = GemsManager.getInstance();
     private PlayerFileManager pfm = PlayerFileManager.getInstance();
     private AutoBroadcast ab = AutoBroadcast.getInstance();
+//    private PlayerConfig pc = PlayerConfig.getInstance();
+
     public static boolean pluginEnabled = false;
     public static boolean effectedMazesLoaded = false;
     private int maze_chance = 0;
+    private File df;
+    private File folder;
+
+    public void initializePF() {
+        folder = new File(Main.plugin.getDataFolder(), "PlayerData" + File.separator);
+        df = Main.plugin.getDataFolder();
+        Main.log("PlayerConfig initialized in Main.");
+    }
 
     public void onEnable() {
         plugin = this;
@@ -180,6 +188,31 @@ public class Main extends JavaPlugin implements Listener {
         strings.checkDefaults();
         loadSpawn();
         registerTasks();
+//        initializePF();
+//        pc.initialize();
+//        if (!df.exists()) {
+//            df.mkdir();
+//            Main.log("PlasmaHub's folder was created.");
+//        } else {
+//            Main.log("PlasmaHub's folder was found.");
+//        }
+//        if (folder == null) {
+//            Main.log("PlasmaHub's folder had an error. Could not find after attempting to generate. Disabling plugin.");
+//            Bukkit.getPluginManager().disablePlugin(plugin);
+//            return;
+//        }
+//        if (df == null) {
+//            Main.log("PlasmaHub's PlayerData folder had an error. Could not find after attempting to generate. Disabling plugin.");
+//            Bukkit.getPluginManager().disablePlugin(plugin);
+//            return;
+//        }
+//        File dataFolder = new File(Main.plugin.getDataFolder(), "PlayerData" + File.separator);
+//        if (!dataFolder.exists()) {
+//            dataFolder.mkdir();
+//            Main.log("PlayerData folder was created.");
+//        } else {
+//            Main.log("PlayerData folder was found.");
+//        }
         if (configs.getConfig().get("Maze.Loaded") == null) {
             configs.getConfig().set("Maze.Loaded", 1);
             configs.saveConfig();

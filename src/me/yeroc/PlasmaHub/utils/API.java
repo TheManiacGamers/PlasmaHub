@@ -9,20 +9,21 @@ import me.yeroc.PlasmaHub.managers.PermissionsManager;
 import me.yeroc.PlasmaHub.managers.PlayerFileManager;
 import me.yeroc.PlasmaHub.managers.Strings;
 import me.yeroc.PlasmaHub.serverselector.ServerSelector;
-import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by Corey on 28/11/2018.
@@ -147,6 +148,38 @@ public class API extends BukkitRunnable {
         Main.kotl_playerInRegion.put(p.getUniqueId(), "no");
         Main.kotl_toldInRegion.put(p.getUniqueId(), "no");
         Main.barProgress.put(p.getUniqueId(), 0);
+    }
+
+    public void removeHashMap(Player p) {
+        Main.pfm_kills.remove(p.getUniqueId());
+        Main.pfm_deaths.remove(p.getUniqueId());
+        Main.pfm_joins.remove(p.getUniqueId());
+        Main.pfm_name.remove(p.getUniqueId());
+        Main.pfm_uuid.remove(p.getUniqueId());
+        Main.pfm_totalGems.remove(p.getUniqueId());
+        Main.pfm_completedParkour.remove(p.getUniqueId());
+        Main.pfm_completedMaze.remove(p.getUniqueId());
+        Main.pfm_timeOnline.remove(p.getUniqueId());
+        Main.pfm_pvpLevel.remove(p.getUniqueId());
+        Main.pfm_pvpExp.remove(p.getUniqueId());
+        Main.pfm_killstreak.remove(p.getUniqueId());
+        Main.pfm_longestKillstreak.remove(p.getUniqueId());
+        Main.pfm_deathstreak.remove(p.getUniqueId());
+        Main.isSitting.remove(p.getUniqueId());
+        Main.arrow.remove(p.getUniqueId());
+        Main.maze_playerEffectSeconds.remove(p.getUniqueId());
+        Main.canDoubleJump.remove(p.getUniqueId());
+        Main.parkour_isInParkour.remove(p.getUniqueId());
+        Main.parkour_playerCheckpoints.remove(p.getUniqueId());
+        Main.maze_isInMaze.remove(p.getUniqueId());
+        Main.kotl_playerInRegion.remove(p.getUniqueId());
+        Main.kotl_toldInRegion.remove(p.getUniqueId());
+        Main.barEnabled.remove(p.getUniqueId());
+        Main.barProgress.remove(p.getUniqueId());
+        Main.firstJoin.remove(p.getUniqueId());
+        Main.scoreboardEnabled.remove(p.getUniqueId());
+        Main.dailyRewards.remove(p.getUniqueId());
+        Main.log("[HashMap] Removed: " + p.getName());
     }
 
     private void addSword(Player p) {

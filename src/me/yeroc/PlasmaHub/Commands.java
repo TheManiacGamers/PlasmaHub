@@ -4,10 +4,7 @@ import com.sk89q.minecraft.util.commands.ChatColor;
 import com.sk89q.minecraft.util.commands.Command;
 import com.sk89q.minecraft.util.commands.CommandContext;
 import com.sk89q.minecraft.util.commands.CommandNumberFormatException;
-import me.yeroc.PlasmaHub.managers.Configs;
-import me.yeroc.PlasmaHub.managers.PermissionsManager;
-import me.yeroc.PlasmaHub.managers.PlayerFileManager;
-import me.yeroc.PlasmaHub.managers.Strings;
+import me.yeroc.PlasmaHub.managers.*;
 import me.yeroc.PlasmaHub.utils.API;
 import me.yeroc.PlasmaHub.utils.TitleAPI.TitleAPI;
 import me.yeroc.PlasmaHub.utils.rewards.GemsManager;
@@ -24,7 +21,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Random;
 import java.util.UUID;
 
 public class Commands {
@@ -113,7 +109,7 @@ public class Commands {
             if (args.argsLength() == 1) {
                 if (args.getString(0).equalsIgnoreCase("reset")) {
                     if (p.hasPermission(perms.plasma_dailyrewards_reset)) {
-                        pfm.getPlayerFile(p).set("DailyRewards.Claimed", "no");
+//                        pfm.getPlayerFile(p).set("DailyRewards.Claimed", "no");
                         Main.dailyRewards.put(p.getUniqueId(), "no");
                         p.sendMessage(strings.getMessage("rewards") + ChatColor.RED + " You reset your Daily Rewards.");
                     } else {

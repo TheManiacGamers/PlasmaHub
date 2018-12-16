@@ -3,10 +3,7 @@ package me.yeroc.PlasmaHub;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import com.sk89q.minecraft.util.commands.ChatColor;
-import me.yeroc.PlasmaHub.managers.Configs;
-import me.yeroc.PlasmaHub.managers.PermissionsManager;
-import me.yeroc.PlasmaHub.managers.PlayerFileManager;
-import me.yeroc.PlasmaHub.managers.Strings;
+import me.yeroc.PlasmaHub.managers.*;
 import me.yeroc.PlasmaHub.utils.API;
 import me.yeroc.PlasmaHub.utils.TitleAPI.TitleAPI;
 import me.yeroc.PlasmaHub.utils.rewards.GemsManager;
@@ -85,14 +82,13 @@ public class PlayerListener extends BukkitRunnable implements Listener {
             Bukkit.broadcastMessage(strings.getMessage("join") + p.getName());
         }
         e.setJoinMessage(null);
+//        pfm.load(p);
         pfm.load(p);
         pfm.addJoins(p, 1);
         Main.log(strings.getMessage("pfLoaded") + p.getName());
         p.getInventory().setHeldItemSlot(0);
         p.setAllowFlight(true);
         p.setFlying(false);
-        //SETTING HASHMAPS
-        api.resetPlayerHashMap(p);
         // KOTL
         if (!(Main.kotl_player.equalsIgnoreCase("blank"))) {
             TitleAPI.sendActionBar(p, Main.kotl_player + strings.getMessage("kotl_currentLeader"));
@@ -153,6 +149,7 @@ public class PlayerListener extends BukkitRunnable implements Listener {
         if (Main.kotl_playersInRegion.contains(p.getUniqueId())) {
             Main.kotl_playersInRegion.remove(p.getUniqueId());
         }
+        api.removeHashMap(p);
     }
 
     @EventHandler
