@@ -278,10 +278,10 @@ public class PlayerFileManager {
             return;
         }
         yaml.save();
-        String suuid = p.getUniqueId().toString();
+        String suuid = p.getUniqueId().toString().toLowerCase();
         Main.uuidConfig.getConfig().set(p.getName(), suuid);
         Main.uuidConfig.saveConfig();
-        Main.log("[File] " + p.getName().toLowerCase() + " added to uuids.yml");
+        Main.log("[File] " + p.getName() + " added to uuids.yml");
         Main.log("[File] Created: " + p.getName());
     }
 
