@@ -179,7 +179,6 @@ public class API extends BukkitRunnable {
         Main.firstJoin.remove(p.getUniqueId());
         Main.scoreboardEnabled.remove(p.getUniqueId());
         Main.dailyRewards.remove(p.getUniqueId());
-        Main.log("[HashMap] Removed: " + p.getName());
     }
 
     private void addSword(Player p) {

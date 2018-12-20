@@ -132,7 +132,6 @@ public class Main extends JavaPlugin implements Listener {
     private API api = API.getInstance();
     private PermissionsManager perms = PermissionsManager.getInstance();
     private Strings strings = Strings.getInstance();
-    private Configs configs = Configs.getInstance();
     private RewardsManager rewards = RewardsManager.getInstance();
     private GemsManager gems = GemsManager.getInstance();
     private PlayerFileManager pfm = PlayerFileManager.getInstance();
@@ -144,6 +143,11 @@ public class Main extends JavaPlugin implements Listener {
     private int maze_chance = 0;
     private File df;
     private File folder;
+
+
+    public static Config defaultConfig;
+    public static Config messagesConfig;
+    public static Config uuidConfig;
 
     public void initializePF() {
         folder = new File(Main.plugin.getDataFolder(), "PlayerData" + File.separator);
@@ -184,63 +188,40 @@ public class Main extends JavaPlugin implements Listener {
         }, 100L);
         registerCommands();
         setupEconomy();
-        configs.setup(this);
+        defaultConfig = new Config("plugins/" + this.getName(), "config.yml", this);
+        messagesConfig = new Config("plugins/" + this.getName(), "messages.yml", this);
+        uuidConfig = new Config("plugins/" + this.getName(), "uuids.yml", this);
         strings.checkDefaults();
         loadSpawn();
         registerTasks();
-//        initializePF();
-//        pc.initialize();
-//        if (!df.exists()) {
-//            df.mkdir();
-//            Main.log("PlasmaHub's folder was created.");
-//        } else {
-//            Main.log("PlasmaHub's folder was found.");
-//        }
-//        if (folder == null) {
-//            Main.log("PlasmaHub's folder had an error. Could not find after attempting to generate. Disabling plugin.");
-//            Bukkit.getPluginManager().disablePlugin(plugin);
-//            return;
-//        }
-//        if (df == null) {
-//            Main.log("PlasmaHub's PlayerData folder had an error. Could not find after attempting to generate. Disabling plugin.");
-//            Bukkit.getPluginManager().disablePlugin(plugin);
-//            return;
-//        }
-//        File dataFolder = new File(Main.plugin.getDataFolder(), "PlayerData" + File.separator);
-//        if (!dataFolder.exists()) {
-//            dataFolder.mkdir();
-//            Main.log("PlayerData folder was created.");
-//        } else {
-//            Main.log("PlayerData folder was found.");
-//        }
-        if (configs.getConfig().get("Maze.Loaded") == null) {
-            configs.getConfig().set("Maze.Loaded", 1);
-            configs.saveConfig();
+        if (defaultConfig.getConfig().get("Maze.Loaded") == null) {
+            defaultConfig.getConfig().set("Maze.Loaded", 1);
+            defaultConfig.saveConfig();
             maze_loaded = 1;
             log(strings.getMessage("maze_default"));
         }
-        if (configs.getConfig().get("Maze.Amount") == null || (configs.getConfig().getInt("Maze.Amount") == 0)) {
-            configs.getConfig().set("Maze.Amount", 7);
-            configs.saveConfig();
+        if (defaultConfig.getConfig().get("Maze.Amount") == null || (defaultConfig.getConfig().getInt("Maze.Amount") == 0)) {
+            defaultConfig.getConfig().set("Maze.Amount", 7);
+            defaultConfig.saveConfig();
         }
-        mazes = configs.getConfig().getInt("Maze.Amount");
-        if (configs.getConfig().get("AutoBroadcast.Interval") == null) {
-            configs.getConfig().set("AutoBroadcast.Interval", 5);
-            configs.saveConfig();
+        mazes = defaultConfig.getConfig().getInt("Maze.Amount");
+        if (defaultConfig.getConfig().get("AutoBroadcast.Interval") == null) {
+            defaultConfig.getConfig().set("AutoBroadcast.Interval", 5);
+            defaultConfig.saveConfig();
             autoBroadcastTime = 5;
             log(strings.getMessage("autoBroadcastIntervalDefault"));
         }
-        if (configs.getConfig().get("AutoBroadcast.Messages") == null) {
+        if (defaultConfig.getConfig().get("AutoBroadcast.Messages") == null) {
             ab.setDefaults();
-            configs.saveConfig();
+            defaultConfig.saveConfig();
         }
-        if (configs.getConfig().get("Maze.BuggedChance") == null) {
-            configs.getConfig().set("Maze.BuggedChance", 50);
+        if (defaultConfig.getConfig().get("Maze.BuggedChance") == null) {
+            defaultConfig.getConfig().set("Maze.BuggedChance", 50);
         }
-        maze_chance = configs.getConfig().getInt("Maze.BuggedChance");
+        maze_chance = defaultConfig.getConfig().getInt("Maze.BuggedChance");
         Main.log(strings.getMessage("autoBroadcastTimeSet") + autoBroadcastTime);
         ab.loadMessages();
-        maze_loaded = configs.getConfig().getInt("Maze.Loaded");
+        maze_loaded = defaultConfig.getConfig().getInt("Maze.Loaded");
         reloadConfirmed.put(Bukkit.getServer(), "empty");
         setupChat();
         Random random = new Random();
@@ -273,6 +254,14 @@ public class Main extends JavaPlugin implements Listener {
         }
         if (Bukkit.getOnlinePlayers().size() != 0) {
             for (final Player p : Bukkit.getOnlinePlayers()) {
+                Bukkit.getScheduler().scheduleSyncDelayedTask(this, new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        if (!pluginEnabled) {
+                            p.sendMessage(ChatColor.RED + "ERROR LOADING PLUGIN, DUE TO THIS, YOUR PLAYER FILE MAY HAVE BEEN CORRUPTED.");
+                        }
+                    }
+                }, 120L);
                 Main.canDoubleJump.put(p.getUniqueId(), "yes");
                 Main.maze_isInMaze.put(p.getUniqueId(), "no");
                 Main.parkour_isInParkour.put(p.getUniqueId(), "no");
@@ -287,15 +276,6 @@ public class Main extends JavaPlugin implements Listener {
                     p.setFlying(false);
                     p.setAllowFlight(true);
                     p.sendMessage(strings.getMessage("inventoryResetReload"));
-
-                    Bukkit.getScheduler().scheduleSyncDelayedTask(this, new BukkitRunnable() {
-                        @Override
-                        public void run() {
-                            if (!pluginEnabled) {
-                                p.sendMessage(ChatColor.RED + "DUE TO THIS, YOUR PLAYER FILE MAY HAVE CORRUPTED.");
-                            }
-                        }
-                    }, 120L);
                 }
                 api.applyAttackSpeed(p);
                 p.setPlayerListHeader("                           ");
@@ -343,9 +323,9 @@ public class Main extends JavaPlugin implements Listener {
                 }
             }
         }
-        configs.getConfig().set("Maze.Loaded", maze_loaded);
-        configs.getConfig().set("Maze.Amount", mazes);
-        configs.saveConfig();
+        defaultConfig.getConfig().set("Maze.Loaded", maze_loaded);
+        defaultConfig.getConfig().set("Maze.Amount", mazes);
+        defaultConfig.saveConfig();
     }
 
 
@@ -359,17 +339,15 @@ public class Main extends JavaPlugin implements Listener {
     }
 
     private void registerTasks() {
-        if (configs.getConfig().get("AutoBroadcast.Interval") == null) {
-            configs.getConfig().set("AutoBroadcast.Interval", 5);
-            configs.saveConfig();
+        if (defaultConfig.getConfig().get("AutoBroadcast.Interval") == null) {
+            defaultConfig.getConfig().set("AutoBroadcast.Interval", 5);
+            defaultConfig.saveConfig();
             autoBroadcastTime = 5;
             log(strings.getMessage("autoBroadcastIntervalDefault"));
         }
-        autoBroadcastTime = configs.getConfig().getInt("AutoBroadcast.Interval");
+        autoBroadcastTime = defaultConfig.getConfig().getInt("AutoBroadcast.Interval");
         log(strings.getMessage("autoBroadcastTimeSet") + autoBroadcastTime);
-        new me.yeroc.PlasmaHub.PlayerListener(this).runTaskTimer(this, 0L, 20L);
-        new me.yeroc.PlasmaHub.managers.PlayerFileManager(this).runTaskTimer(this, 0L, 20L);
-        new me.yeroc.PlasmaHub.AutoBroadcast().runTaskTimer(this, 0L, autoBroadcastTime * 20 * 60);
+        new Tasks().runTaskTimer(this, 0L, 20L);
 //        new me.yeroc.PlasmaHub.managers.Scoreboard().runTaskTimer(this, 0L, 20L);
         new me.yeroc.PlasmaHub.utils.API().runTaskTimer(this, 0L, 65L);
         Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
@@ -384,12 +362,12 @@ public class Main extends JavaPlugin implements Listener {
     }
 
     public void loadSpawn() {
-        if (configs.getConfig().get("Spawn") != null) {
-            double x = configs.getConfig().getDouble("Spawn.X");
-            double y = configs.getConfig().getDouble("Spawn.Y");
-            double z = configs.getConfig().getDouble("Spawn.Z");
-            double yaw = configs.getConfig().getDouble("Spawn.Yaw");
-            double pitch = configs.getConfig().getDouble("Spawn.Pitch");
+        if (defaultConfig.getConfig().get("Spawn") != null) {
+            double x = defaultConfig.getConfig().getDouble("Spawn.X");
+            double y = defaultConfig.getConfig().getDouble("Spawn.Y");
+            double z = defaultConfig.getConfig().getDouble("Spawn.Z");
+            double yaw = defaultConfig.getConfig().getDouble("Spawn.Yaw");
+            double pitch = defaultConfig.getConfig().getDouble("Spawn.Pitch");
             spawn = new Location(Bukkit.getWorld("world"), x, y, z, (float) yaw, (float) pitch);
             Main.log("Spawn has been loaded.");
         } else {

@@ -25,8 +25,6 @@ public class Strings {
         return instance;
     }
 
-    private Configs configs = Configs.getInstance();
-
     private String prefix = ("§0[§b§lPlasma§0]§r");
     private String server = ("§0[§a§lServer§0]§r");
     private String mustBePlayer = ("{PREFIX} §cYou must be a player to use this command.");
@@ -193,6 +191,7 @@ public class Strings {
     private String welcomeNew_1 = ("§2§lPlasmaNetwork§a welcomes ");
     private String welcomeNew_2 = ("§a to the server!");
     private String rewards_gemsAdded = ("{REWARDS} §aYou earned more gems! Added to your account: §c");
+    private String pingPrefix = ("§0[§9Ping§0] §r");
 
     // prefix: text
     public String getMessage(String message) {
@@ -256,24 +255,24 @@ public class Strings {
                     return s;
                 } else {
                     if (Main.messages.get(message) == null) {
-                        if (configs.getMessages().getString("Messages." + message) == null) {
-                            configs.getMessages().set("Messages." + message, message);
-                            configs.saveMessages();
+                        if (Main.messagesConfig.getConfig().getString("Messages." + message) == null) {
+                            Main.messagesConfig.getConfig().set("Messages." + message, message);
+                            Main.messagesConfig.saveConfig();
                             Main.log("There was an error getting the message: " + message + ". Please check.");
                             Bukkit.broadcastMessage(ChatColor.RED + "There was an error getting the message: " + message + ". Please contact an owner.");
-//                            if (configs.getMessages().getString("Messages." + message) == null) {
+//                            if (Main.messagesConfig.getConfig().getString("Messages." + message) == null) {
 //                                if (setDefault(message)) {
-//                                    configs.saveMessages();
+//                                    Main.messagesConfig.saveConfig();
 //                                    Bukkit.broadcastMessage(ChatColor.RED + "Please reload config. /plasma reload, " + message + " has to be fixed.");
 //                                } else {
 //                                    return errorGettingMessage;
 //                                }
 //                            } else {
 //                                if (setDefault(message)) {
-//                                    configs.saveMessages();
+//                                    Main.messagesConfig.saveConfig();
 //                                    Bukkit.broadcastMessage(ChatColor.RED + "Please reload config. /plasma reload, " + message + " has to be fixed."); // make it so it only sends to people with permission
 //                                } else {
-//                                    configs.saveMessages();
+//                                    Main.messagesConfig.saveConfig();
 //                                    Main.log(ChatColor.RED + "There was an error getting the message: " + message + ". This will need to be fixed.");
 //                                    Bukkit.broadcastMessage(ChatColor.RED + "There was an error getting the message: " + message + ". Please contact an owner.");
 //                                    message = "Fix: " + message;
@@ -292,10 +291,10 @@ public class Strings {
 
     public void loadMessages() {
         Main.log("Loading messages");
-        Main.log("Messages to load: " + configs.getMessages().getConfigurationSection("Messages").getKeys(true).size());
-        for (int i = 0; i < configs.getMessages().getConfigurationSection("Messages").getKeys(false).size(); ) {
-            for (final String s : configs.getMessages().getConfigurationSection("Messages").getKeys(false)) {
-                String sX = configs.getMessages().getString("Messages." + s);
+        Main.log("Messages to load: " + Main.messagesConfig.getConfig().getConfigurationSection("Messages").getKeys(true).size());
+        for (int i = 0; i < Main.messagesConfig.getConfig().getConfigurationSection("Messages").getKeys(false).size(); ) {
+            for (final String s : Main.messagesConfig.getConfig().getConfigurationSection("Messages").getKeys(false)) {
+                String sX = Main.messagesConfig.getConfig().getString("Messages." + s);
                 if (sX.contains("\'")) {
                     if (Bukkit.getOnlinePlayers().size() != 0) {
                         for (final Player p : Bukkit.getOnlinePlayers()) {
@@ -312,10 +311,10 @@ public class Strings {
                     }
                     continue;
                 }
-                Main.messages.put(s, configs.getMessages().getString("Messages." + s));
-                Main.log("Loaded: " + s + ": " + configs.getMessages().getString("Messages." + s));
+                Main.messages.put(s, Main.messagesConfig.getConfig().getString("Messages." + s));
+                Main.log("Loaded: " + s + ": " + Main.messagesConfig.getConfig().getString("Messages." + s));
             }
-            if (Main.messages.size() < configs.getMessages().getConfigurationSection("Messages").getKeys(true).size()) {
+            if (Main.messages.size() < Main.messagesConfig.getConfig().getConfigurationSection("Messages").getKeys(true).size()) {
                 i++;
             } else {
                 Main.log("Completed loading.");
@@ -327,1072 +326,1078 @@ public class Strings {
     }
 
     public void checkDefaults() {
-        if (configs.getMessages().get("Messages") == null) {
-            configs.getMessages().set("Messages.prefix", prefix);
-            configs.getMessages().set("Messages.server", server);
-            configs.getMessages().set("Messages.mustBePlayer", mustBePlayer);
-            configs.getMessages().set("Messages.noPermission", noPermission);
-            configs.getMessages().set("Messages.incorrectArguments", incorrectArguments);
-            configs.getMessages().set("Messages.error", error);
-            configs.getMessages().set("Messages.spawnNotSet", spawnNotSet);
-            configs.getMessages().set("Messages.spawnNotSetAllowed", spawnNotSetAllowed);
-            configs.getMessages().set("Messages.spawnSet", spawnSet);
-            configs.getMessages().set("Messages.inventoryResetReload", inventoryResetReload);
-            configs.getMessages().set("Messages.alreadyThatGamemode", alreadyThatGamemode);
-            configs.getMessages().set("Messages.changedGamemode", changedGamemode);
-            configs.getMessages().set("Messages.currentlyDisabled", currentlyDisabled);
-            configs.getMessages().set("Messages.join", join);
-            configs.getMessages().set("Messages.quit", quit);
-            configs.getMessages().set("Messages.reloadIn", reloadIn);
-            configs.getMessages().set("Messages.reloadCancelled", reloadCancelled);
-            configs.getMessages().set("Messages.reloadAwaitingConfirmation", reloadAwaitingConfirmation);
-            configs.getMessages().set("Messages.serverReloaded", serverReloaded);
-            configs.getMessages().set("Messages.pfLoaded", pfLoaded);
-            configs.getMessages().set("Messages.sendToServer", sendToServer);
-            configs.getMessages().set("Messages.inventoryResetManual", inventoryResetManual);
-            configs.getMessages().set("Messages.resetAllInventory", resetAllInventory);
-            configs.getMessages().set("Messages.noPermissionServer", noPermissionServer);
-            configs.getMessages().set("Messages.cantUseHere", cantUseHere);
-            configs.getMessages().set("Messages.helpHeader", helpHeader);
-            configs.getMessages().set("Messages.helpFooter1", helpFooter1);
-            configs.getMessages().set("Messages.helpFooter2", helpFooter2);
-            configs.getMessages().set("Messages.helpEmpty", helpEmpty);
-            configs.getMessages().set("Messages.help1", help1);
-            configs.getMessages().set("Messages.help2", help2);
-            configs.getMessages().set("Messages.help3", help3);
-            configs.getMessages().set("Messages.kotl", kotl);
-            configs.getMessages().set("Messages.kotl_enter", kotl_enter);
-            configs.getMessages().set("Messages.kotl_leave", kotl_leave);
-            configs.getMessages().set("Messages.kotl_newLeader", kotl_newLeader);
-            configs.getMessages().set("Messages.kotl_youAreNewLeader", kotl_youAreNewLeader);
-            configs.getMessages().set("Messages.kotl_currentLeader", kotl_currentLeader);
-            configs.getMessages().set("Messages.kotl_leaderLeft", kotl_leaderLeft);
-            configs.getMessages().set("Messages.kotl_noLongerLeader", kotl_noLongerLeader);
-            configs.getMessages().set("Messages.kotl_died", kotl_died);
-            configs.getMessages().set("Messages.pvp", pvp);
-            configs.getMessages().set("Messages.pvp_enabled", pvp_enabled);
-            configs.getMessages().set("Messages.pvp_disabled", pvp_disabled);
-            configs.getMessages().set("Messages.pvp_cantHit", pvp_cantHit);
-            configs.getMessages().set("Messages.pvp_killedBy", pvp_killedBy);
-            configs.getMessages().set("Messages.pvp_youKilled", pvp_youKilled);
-            configs.getMessages().set("Messages.snowball_onFloor", snowball_onFloor);
-            configs.getMessages().set("Messages.parkour", parkour);
-            configs.getMessages().set("Messages.parkour_start", parkour_start);
-            configs.getMessages().set("Messages.parkour_stop", parkour_stop);
-            configs.getMessages().set("Messages.parkour_finish", parkour_finish);
-            configs.getMessages().set("Messages.parkour_notStarted", parkour_notStarted);
-            configs.getMessages().set("Messages.parkour_chp", parkour_chp);
-            configs.getMessages().set("Messages.parkour_error", parkour_error);
-            configs.getMessages().set("Messages.parkour_teleport_start", parkour_teleport_start);
-            configs.getMessages().set("Messages.parkour_teleport", parkour_teleport);
-            configs.getMessages().set("Messages.parkour_left_reload", parkour_left_reload);
-            configs.getMessages().set("Messages.parkour_noPermission", parkour_noPermission);
-            configs.getMessages().set("Messages.parkour_alreadyCompleted", parkour_alreadyCompleted);
-            configs.getMessages().set("Messages.parkour_useParkourToReturn", parkour_useParkourToReturn);
-            configs.getMessages().set("Messages.parkour_isInParkour", parkour_isInParkour);
-            configs.getMessages().set("Messages.maze", maze);
-            configs.getMessages().set("Messages.maze_start", maze_start);
-            configs.getMessages().set("Messages.maze_stop", maze_stop);
-            configs.getMessages().set("Messages.maze_left_reload", maze_left_reload);
-            configs.getMessages().set("Messages.maze_finish", maze_finish);
-            configs.getMessages().set("Messages.maze_notStarted", maze_notStarted);
-            configs.getMessages().set("Messages.maze_loaded", maze_loaded);
-            configs.getMessages().set("Messages.maze_loaded_done", maze_loaded_done);
-            configs.getMessages().set("Messages.maze_nameTaken", maze_nameTaken);
-            configs.getMessages().set("Messages.maze_givenSelector", maze_givenSelector);
-            configs.getMessages().set("Messages.maze_selectArea", maze_selectArea);
-            configs.getMessages().set("Messages.maze_location1set", maze_location1set);
-            configs.getMessages().set("Messages.maze_location2set", maze_location2set);
-            configs.getMessages().set("Messages.maze_mustSelectBlock", maze_mustSelectBlock);
-            configs.getMessages().set("Messages.maze_thereWasErrorFixed", maze_thereWasErrorFixed);
-            configs.getMessages().set("Messages.maze_created", maze_created);
-            configs.getMessages().set("Messages.maze_wrongLocation", maze_wrongLocation);
-            configs.getMessages().set("Messages.maze_noPermission", maze_noPermission);
-            configs.getMessages().set("Messages.maze_default", maze_default);
-            configs.getMessages().set("Messages.maze_onlySurvival", maze_onlySurvival);
-            configs.getMessages().set("Messages.maze_alreadyCompleted", maze_alreadyCompleted);
-            configs.getMessages().set("Messages.maze_peopleInGame", maze_peopleInGame);
-            configs.getMessages().set("Messages.maze_youAreInMaze", maze_youAreInMaze);
-            configs.getMessages().set("Messages.minigames", minigames);
-            configs.getMessages().set("Messages.minigame_bypass", minigame_bypass);
-            configs.getMessages().set("Messages.minigame_onceADay", minigame_onceADay);
-            configs.getMessages().set("Messages.stats", stats);
-            configs.getMessages().set("Messages.stats_kills", stats_kills);
-            configs.getMessages().set("Messages.stats_deaths", stats_deaths);
-            configs.getMessages().set("Messages.stats_joins", stats_joins);
-            configs.getMessages().set("Messages.stats_gems", stats_gems);
-            configs.getMessages().set("Messages.stats_timeOnline", stats_timeOnline);
-            configs.getMessages().set("Messages.stats_1", stats_1);
-            configs.getMessages().set("Messages.stats_2", stats_2);
-            configs.getMessages().set("Messages.chair", chair);
-            configs.getMessages().set("Messages.chair_sitting", chair_sitting);
-            configs.getMessages().set("Messages.chair_standing", chair_standing);
-            configs.getMessages().set("Messages.pfm_addMoneyDisabled", pfm_addMoneyDisabled);
-            configs.getMessages().set("Messages.pfm_addStrengthDisabled", pfm_addStrengthDisabled);
-            configs.getMessages().set("Messages.pfm_pvpLevelUp", pfm_pvpLevelUp);
-            configs.getMessages().set("Messages.pfm_pvpNewLevel", pfm_pvpNewLevel);
-            configs.getMessages().set("Messages.pfm_pvp1o4left", pfm_pvp1o4left);
-            configs.getMessages().set("pfm_pvp2o4left", pfm_pvp2o4left);
-            configs.getMessages().set("Messages.pfm_pvp3o4left", pfm_pvp3o4left);
-            configs.getMessages().set("Messages.pfm_pvpFinalLevel", pfm_pvpFinalLevel);
-            configs.getMessages().set("Messages.pfm_broadcastNewLevel", pfm_broadcastNewLevel);
-            configs.getMessages().set("Messages.ownerPrefix", ownerPrefix);
-            configs.getMessages().set("Messages.sparkPrefix", sparkPrefix);
-            configs.getMessages().set("Messages.reloadingConfig", reloadingConfig);
-            configs.getMessages().set("Messages.reloadedConfig", reloadedConfig);
-            configs.getMessages().set("Messages.errorGettingMessageFix", errorGettingMessageFix);
-            configs.getMessages().set("Messages.errorLoadingMessageFix", errorLoadingMessageFix);
-            configs.getMessages().set("Messages.loadedMessage", loadedMessage);
-            configs.getMessages().set("Messages.errorGettingMessage", errorGettingMessage);
-            configs.getMessages().set("Messages.messagesLoaded", messagesLoaded);
-            configs.getMessages().set("Messages.autoBroadcastIntervalDefault", autoBroadcastIntervalDefault);
-            configs.getMessages().set("Messages.errorGettingAutoBroadcastMessage", errorGettingAutoBroadcastMessage);
-            configs.getMessages().set("Messages.autoBroadcastPrefix", autoBroadcastPrefix);
-            configs.getMessages().set("Messages.autoBroadcastTimeSet", autoBroadcastTimeSet);
-            configs.getMessages().set("Messages.autoBroadcastMessagesLoaded", autoBroadcastMessagesLoaded);
-            configs.getMessages().set("Messages.autoBroadcastMessages", autoBroadcastMessages);
-            configs.getMessages().set("Messages.newMazeAmount", newMazeAmount);
-            configs.getMessages().set("Messages.mustBeNumber", mustBeNumber);
-            configs.getMessages().set("Messages.numberTooHigh", numberTooHigh);
-            configs.getMessages().set("Messages.mazeAmount", mazeAmount);
-            configs.getMessages().set("Messages.maze_loaded_set", maze_loaded_set);
-            configs.getMessages().set("Messages.pvpLevel", stats_pvpLevel);
-            configs.getMessages().set("Messages.expLevel", stats_expLevel);
-            configs.getMessages().set("Messages.pluginDisabled", pluginDisabled);
-            configs.getMessages().set("Messages.clearingEntities", clearingEntities);
-            configs.getMessages().set("Messages.barToggled", barToggled);
-            configs.getMessages().set("Messages.PlasmaNetwork", PlasmaNetwork);
-            configs.getMessages().set("Messages.stats_killstreak", stats_killstreak);
-            configs.getMessages().set("Messages.stats_longestKillstreak", stats_longestKillstreak);
-            configs.getMessages().set("Messages.maze_bugged", maze_bugged);
-            configs.getMessages().set("Messages.maze_loaded_bugged", maze_loaded_bugged);
-            configs.getMessages().set("Messages.maze_cannotBeZero", maze_cannotBeZero);
-            configs.getMessages().set("Messages.maze_mazeAmount", maze_mazeAmount);
-            configs.getMessages().set("Messages.rewards", rewards);
-            configs.getMessages().set("Messages.dailyRewardsClaimed", dailyRewardsClaimed);
-            configs.getMessages().set("Messages.dailyRewardUnclaimed", dailyRewardUnclaimed);
-            configs.getMessages().set("Messages.dailyRewardsAlreadyClaimed", dailyRewardsAlreadyClaimed);
-            configs.getMessages().set("Messages.welcome", welcome);
-            configs.getMessages().set("Messages.welcomeBack", welcomeBack);
-            configs.getMessages().set("Messages.welcomeNew_1", welcomeNew_1);
-            configs.getMessages().set("Messages.welcomeNew_2", welcomeNew_2);
-            configs.getMessages().set("Messages.rewards_gemsAdded", rewards_gemsAdded);
-            configs.saveMessages();
+        if (Main.messagesConfig.getConfig().get("Messages") == null) {
+            Main.messagesConfig.getConfig().set("Messages.prefix", prefix);
+            Main.messagesConfig.getConfig().set("Messages.server", server);
+            Main.messagesConfig.getConfig().set("Messages.mustBePlayer", mustBePlayer);
+            Main.messagesConfig.getConfig().set("Messages.noPermission", noPermission);
+            Main.messagesConfig.getConfig().set("Messages.incorrectArguments", incorrectArguments);
+            Main.messagesConfig.getConfig().set("Messages.error", error);
+            Main.messagesConfig.getConfig().set("Messages.spawnNotSet", spawnNotSet);
+            Main.messagesConfig.getConfig().set("Messages.spawnNotSetAllowed", spawnNotSetAllowed);
+            Main.messagesConfig.getConfig().set("Messages.spawnSet", spawnSet);
+            Main.messagesConfig.getConfig().set("Messages.inventoryResetReload", inventoryResetReload);
+            Main.messagesConfig.getConfig().set("Messages.alreadyThatGamemode", alreadyThatGamemode);
+            Main.messagesConfig.getConfig().set("Messages.changedGamemode", changedGamemode);
+            Main.messagesConfig.getConfig().set("Messages.currentlyDisabled", currentlyDisabled);
+            Main.messagesConfig.getConfig().set("Messages.join", join);
+            Main.messagesConfig.getConfig().set("Messages.quit", quit);
+            Main.messagesConfig.getConfig().set("Messages.reloadIn", reloadIn);
+            Main.messagesConfig.getConfig().set("Messages.reloadCancelled", reloadCancelled);
+            Main.messagesConfig.getConfig().set("Messages.reloadAwaitingConfirmation", reloadAwaitingConfirmation);
+            Main.messagesConfig.getConfig().set("Messages.serverReloaded", serverReloaded);
+            Main.messagesConfig.getConfig().set("Messages.pfLoaded", pfLoaded);
+            Main.messagesConfig.getConfig().set("Messages.sendToServer", sendToServer);
+            Main.messagesConfig.getConfig().set("Messages.inventoryResetManual", inventoryResetManual);
+            Main.messagesConfig.getConfig().set("Messages.resetAllInventory", resetAllInventory);
+            Main.messagesConfig.getConfig().set("Messages.noPermissionServer", noPermissionServer);
+            Main.messagesConfig.getConfig().set("Messages.cantUseHere", cantUseHere);
+            Main.messagesConfig.getConfig().set("Messages.helpHeader", helpHeader);
+            Main.messagesConfig.getConfig().set("Messages.helpFooter1", helpFooter1);
+            Main.messagesConfig.getConfig().set("Messages.helpFooter2", helpFooter2);
+            Main.messagesConfig.getConfig().set("Messages.helpEmpty", helpEmpty);
+            Main.messagesConfig.getConfig().set("Messages.help1", help1);
+            Main.messagesConfig.getConfig().set("Messages.help2", help2);
+            Main.messagesConfig.getConfig().set("Messages.help3", help3);
+            Main.messagesConfig.getConfig().set("Messages.kotl", kotl);
+            Main.messagesConfig.getConfig().set("Messages.kotl_enter", kotl_enter);
+            Main.messagesConfig.getConfig().set("Messages.kotl_leave", kotl_leave);
+            Main.messagesConfig.getConfig().set("Messages.kotl_newLeader", kotl_newLeader);
+            Main.messagesConfig.getConfig().set("Messages.kotl_youAreNewLeader", kotl_youAreNewLeader);
+            Main.messagesConfig.getConfig().set("Messages.kotl_currentLeader", kotl_currentLeader);
+            Main.messagesConfig.getConfig().set("Messages.kotl_leaderLeft", kotl_leaderLeft);
+            Main.messagesConfig.getConfig().set("Messages.kotl_noLongerLeader", kotl_noLongerLeader);
+            Main.messagesConfig.getConfig().set("Messages.kotl_died", kotl_died);
+            Main.messagesConfig.getConfig().set("Messages.pvp", pvp);
+            Main.messagesConfig.getConfig().set("Messages.pvp_enabled", pvp_enabled);
+            Main.messagesConfig.getConfig().set("Messages.pvp_disabled", pvp_disabled);
+            Main.messagesConfig.getConfig().set("Messages.pvp_cantHit", pvp_cantHit);
+            Main.messagesConfig.getConfig().set("Messages.pvp_killedBy", pvp_killedBy);
+            Main.messagesConfig.getConfig().set("Messages.pvp_youKilled", pvp_youKilled);
+            Main.messagesConfig.getConfig().set("Messages.snowball_onFloor", snowball_onFloor);
+            Main.messagesConfig.getConfig().set("Messages.parkour", parkour);
+            Main.messagesConfig.getConfig().set("Messages.parkour_start", parkour_start);
+            Main.messagesConfig.getConfig().set("Messages.parkour_stop", parkour_stop);
+            Main.messagesConfig.getConfig().set("Messages.parkour_finish", parkour_finish);
+            Main.messagesConfig.getConfig().set("Messages.parkour_notStarted", parkour_notStarted);
+            Main.messagesConfig.getConfig().set("Messages.parkour_chp", parkour_chp);
+            Main.messagesConfig.getConfig().set("Messages.parkour_error", parkour_error);
+            Main.messagesConfig.getConfig().set("Messages.parkour_teleport_start", parkour_teleport_start);
+            Main.messagesConfig.getConfig().set("Messages.parkour_teleport", parkour_teleport);
+            Main.messagesConfig.getConfig().set("Messages.parkour_left_reload", parkour_left_reload);
+            Main.messagesConfig.getConfig().set("Messages.parkour_noPermission", parkour_noPermission);
+            Main.messagesConfig.getConfig().set("Messages.parkour_alreadyCompleted", parkour_alreadyCompleted);
+            Main.messagesConfig.getConfig().set("Messages.parkour_useParkourToReturn", parkour_useParkourToReturn);
+            Main.messagesConfig.getConfig().set("Messages.parkour_isInParkour", parkour_isInParkour);
+            Main.messagesConfig.getConfig().set("Messages.maze", maze);
+            Main.messagesConfig.getConfig().set("Messages.maze_start", maze_start);
+            Main.messagesConfig.getConfig().set("Messages.maze_stop", maze_stop);
+            Main.messagesConfig.getConfig().set("Messages.maze_left_reload", maze_left_reload);
+            Main.messagesConfig.getConfig().set("Messages.maze_finish", maze_finish);
+            Main.messagesConfig.getConfig().set("Messages.maze_notStarted", maze_notStarted);
+            Main.messagesConfig.getConfig().set("Messages.maze_loaded", maze_loaded);
+            Main.messagesConfig.getConfig().set("Messages.maze_loaded_done", maze_loaded_done);
+            Main.messagesConfig.getConfig().set("Messages.maze_nameTaken", maze_nameTaken);
+            Main.messagesConfig.getConfig().set("Messages.maze_givenSelector", maze_givenSelector);
+            Main.messagesConfig.getConfig().set("Messages.maze_selectArea", maze_selectArea);
+            Main.messagesConfig.getConfig().set("Messages.maze_location1set", maze_location1set);
+            Main.messagesConfig.getConfig().set("Messages.maze_location2set", maze_location2set);
+            Main.messagesConfig.getConfig().set("Messages.maze_mustSelectBlock", maze_mustSelectBlock);
+            Main.messagesConfig.getConfig().set("Messages.maze_thereWasErrorFixed", maze_thereWasErrorFixed);
+            Main.messagesConfig.getConfig().set("Messages.maze_created", maze_created);
+            Main.messagesConfig.getConfig().set("Messages.maze_wrongLocation", maze_wrongLocation);
+            Main.messagesConfig.getConfig().set("Messages.maze_noPermission", maze_noPermission);
+            Main.messagesConfig.getConfig().set("Messages.maze_default", maze_default);
+            Main.messagesConfig.getConfig().set("Messages.maze_onlySurvival", maze_onlySurvival);
+            Main.messagesConfig.getConfig().set("Messages.maze_alreadyCompleted", maze_alreadyCompleted);
+            Main.messagesConfig.getConfig().set("Messages.maze_peopleInGame", maze_peopleInGame);
+            Main.messagesConfig.getConfig().set("Messages.maze_youAreInMaze", maze_youAreInMaze);
+            Main.messagesConfig.getConfig().set("Messages.minigames", minigames);
+            Main.messagesConfig.getConfig().set("Messages.minigame_bypass", minigame_bypass);
+            Main.messagesConfig.getConfig().set("Messages.minigame_onceADay", minigame_onceADay);
+            Main.messagesConfig.getConfig().set("Messages.stats", stats);
+            Main.messagesConfig.getConfig().set("Messages.stats_kills", stats_kills);
+            Main.messagesConfig.getConfig().set("Messages.stats_deaths", stats_deaths);
+            Main.messagesConfig.getConfig().set("Messages.stats_joins", stats_joins);
+            Main.messagesConfig.getConfig().set("Messages.stats_gems", stats_gems);
+            Main.messagesConfig.getConfig().set("Messages.stats_timeOnline", stats_timeOnline);
+            Main.messagesConfig.getConfig().set("Messages.stats_1", stats_1);
+            Main.messagesConfig.getConfig().set("Messages.stats_2", stats_2);
+            Main.messagesConfig.getConfig().set("Messages.chair", chair);
+            Main.messagesConfig.getConfig().set("Messages.chair_sitting", chair_sitting);
+            Main.messagesConfig.getConfig().set("Messages.chair_standing", chair_standing);
+            Main.messagesConfig.getConfig().set("Messages.pfm_addMoneyDisabled", pfm_addMoneyDisabled);
+            Main.messagesConfig.getConfig().set("Messages.pfm_addStrengthDisabled", pfm_addStrengthDisabled);
+            Main.messagesConfig.getConfig().set("Messages.pfm_pvpLevelUp", pfm_pvpLevelUp);
+            Main.messagesConfig.getConfig().set("Messages.pfm_pvpNewLevel", pfm_pvpNewLevel);
+            Main.messagesConfig.getConfig().set("Messages.pfm_pvp1o4left", pfm_pvp1o4left);
+            Main.messagesConfig.getConfig().set("pfm_pvp2o4left", pfm_pvp2o4left);
+            Main.messagesConfig.getConfig().set("Messages.pfm_pvp3o4left", pfm_pvp3o4left);
+            Main.messagesConfig.getConfig().set("Messages.pfm_pvpFinalLevel", pfm_pvpFinalLevel);
+            Main.messagesConfig.getConfig().set("Messages.pfm_broadcastNewLevel", pfm_broadcastNewLevel);
+            Main.messagesConfig.getConfig().set("Messages.ownerPrefix", ownerPrefix);
+            Main.messagesConfig.getConfig().set("Messages.sparkPrefix", sparkPrefix);
+            Main.messagesConfig.getConfig().set("Messages.reloadingConfig", reloadingConfig);
+            Main.messagesConfig.getConfig().set("Messages.reloadedConfig", reloadedConfig);
+            Main.messagesConfig.getConfig().set("Messages.errorGettingMessageFix", errorGettingMessageFix);
+            Main.messagesConfig.getConfig().set("Messages.errorLoadingMessageFix", errorLoadingMessageFix);
+            Main.messagesConfig.getConfig().set("Messages.loadedMessage", loadedMessage);
+            Main.messagesConfig.getConfig().set("Messages.errorGettingMessage", errorGettingMessage);
+            Main.messagesConfig.getConfig().set("Messages.messagesLoaded", messagesLoaded);
+            Main.messagesConfig.getConfig().set("Messages.autoBroadcastIntervalDefault", autoBroadcastIntervalDefault);
+            Main.messagesConfig.getConfig().set("Messages.errorGettingAutoBroadcastMessage", errorGettingAutoBroadcastMessage);
+            Main.messagesConfig.getConfig().set("Messages.autoBroadcastPrefix", autoBroadcastPrefix);
+            Main.messagesConfig.getConfig().set("Messages.autoBroadcastTimeSet", autoBroadcastTimeSet);
+            Main.messagesConfig.getConfig().set("Messages.autoBroadcastMessagesLoaded", autoBroadcastMessagesLoaded);
+            Main.messagesConfig.getConfig().set("Messages.autoBroadcastMessages", autoBroadcastMessages);
+            Main.messagesConfig.getConfig().set("Messages.newMazeAmount", newMazeAmount);
+            Main.messagesConfig.getConfig().set("Messages.mustBeNumber", mustBeNumber);
+            Main.messagesConfig.getConfig().set("Messages.numberTooHigh", numberTooHigh);
+            Main.messagesConfig.getConfig().set("Messages.mazeAmount", mazeAmount);
+            Main.messagesConfig.getConfig().set("Messages.maze_loaded_set", maze_loaded_set);
+            Main.messagesConfig.getConfig().set("Messages.pvpLevel", stats_pvpLevel);
+            Main.messagesConfig.getConfig().set("Messages.expLevel", stats_expLevel);
+            Main.messagesConfig.getConfig().set("Messages.pluginDisabled", pluginDisabled);
+            Main.messagesConfig.getConfig().set("Messages.clearingEntities", clearingEntities);
+            Main.messagesConfig.getConfig().set("Messages.barToggled", barToggled);
+            Main.messagesConfig.getConfig().set("Messages.PlasmaNetwork", PlasmaNetwork);
+            Main.messagesConfig.getConfig().set("Messages.stats_killstreak", stats_killstreak);
+            Main.messagesConfig.getConfig().set("Messages.stats_longestKillstreak", stats_longestKillstreak);
+            Main.messagesConfig.getConfig().set("Messages.maze_bugged", maze_bugged);
+            Main.messagesConfig.getConfig().set("Messages.maze_loaded_bugged", maze_loaded_bugged);
+            Main.messagesConfig.getConfig().set("Messages.maze_cannotBeZero", maze_cannotBeZero);
+            Main.messagesConfig.getConfig().set("Messages.maze_mazeAmount", maze_mazeAmount);
+            Main.messagesConfig.getConfig().set("Messages.rewards", rewards);
+            Main.messagesConfig.getConfig().set("Messages.dailyRewardsClaimed", dailyRewardsClaimed);
+            Main.messagesConfig.getConfig().set("Messages.dailyRewardUnclaimed", dailyRewardUnclaimed);
+            Main.messagesConfig.getConfig().set("Messages.dailyRewardsAlreadyClaimed", dailyRewardsAlreadyClaimed);
+            Main.messagesConfig.getConfig().set("Messages.welcome", welcome);
+            Main.messagesConfig.getConfig().set("Messages.welcomeBack", welcomeBack);
+            Main.messagesConfig.getConfig().set("Messages.welcomeNew_1", welcomeNew_1);
+            Main.messagesConfig.getConfig().set("Messages.welcomeNew_2", welcomeNew_2);
+            Main.messagesConfig.getConfig().set("Messages.rewards_gemsAdded", rewards_gemsAdded);
+            Main.messagesConfig.getConfig().set("Messages.pingPrefix", pingPrefix);
+            Main.messagesConfig.saveConfig();
         }
-        for (String s : configs.getMessages().getStringList("Messages")) {
-            if (configs.getMessages().get("Messages." + s) == null) {
+        for (String s : Main.messagesConfig.getConfig().getStringList("Messages")) {
+            if (Main.messagesConfig.getConfig().get("Messages." + s) == null) {
                 if (s.equalsIgnoreCase("prefix")) {
-                    configs.getMessages().set("Messages." + s, prefix);
+                    Main.messagesConfig.getConfig().set("Messages." + s, prefix);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, prefix);
                 }
                 if (s.equalsIgnoreCase("server")) {
-                    configs.getMessages().set("Messages." + s, server);
+                    Main.messagesConfig.getConfig().set("Messages." + s, server);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, server);
 
                 }
                 if (s.equalsIgnoreCase("mustBePlayer")) {
-                    configs.getMessages().set("Messages." + s, mustBePlayer);
+                    Main.messagesConfig.getConfig().set("Messages." + s, mustBePlayer);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, mustBePlayer);
 
                 }
                 if (s.equalsIgnoreCase("noPermission")) {
-                    configs.getMessages().set("Messages." + s, noPermission);
+                    Main.messagesConfig.getConfig().set("Messages." + s, noPermission);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, noPermission);
 
                 }
                 if (s.equalsIgnoreCase("incorrectArguments")) {
-                    configs.getMessages().set("Messages." + s, incorrectArguments);
+                    Main.messagesConfig.getConfig().set("Messages." + s, incorrectArguments);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, incorrectArguments);
 
                 }
                 if (s.equalsIgnoreCase("error")) {
-                    configs.getMessages().set("Messages." + s, error);
+                    Main.messagesConfig.getConfig().set("Messages." + s, error);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, error);
 
                 }
                 if (s.equalsIgnoreCase("spawnNotSet")) {
-                    configs.getMessages().set("Messages." + s, spawnNotSet);
+                    Main.messagesConfig.getConfig().set("Messages." + s, spawnNotSet);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, spawnNotSet);
 
                 }
                 if (s.equalsIgnoreCase("spawnNotSetAllowed")) {
-                    configs.getMessages().set("Messages." + s, spawnNotSetAllowed);
+                    Main.messagesConfig.getConfig().set("Messages." + s, spawnNotSetAllowed);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, spawnNotSetAllowed);
 
                 }
                 if (s.equalsIgnoreCase("spawnSet")) {
-                    configs.getMessages().set("Messages." + s, spawnSet);
+                    Main.messagesConfig.getConfig().set("Messages." + s, spawnSet);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, spawnSet);
 
                 }
                 if (s.equalsIgnoreCase("inventoryResetReload")) {
-                    configs.getMessages().set("Messages." + s, inventoryResetReload);
+                    Main.messagesConfig.getConfig().set("Messages." + s, inventoryResetReload);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, inventoryResetReload);
 
                 }
                 if (s.equalsIgnoreCase("alreadyThatGamemode")) {
-                    configs.getMessages().set("Messages." + s, alreadyThatGamemode);
+                    Main.messagesConfig.getConfig().set("Messages." + s, alreadyThatGamemode);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, alreadyThatGamemode);
 
                 }
                 if (s.equalsIgnoreCase("changedGamemode")) {
-                    configs.getMessages().set("Messages." + s, changedGamemode);
+                    Main.messagesConfig.getConfig().set("Messages." + s, changedGamemode);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, changedGamemode);
 
                 }
                 if (s.equalsIgnoreCase("currentlyDisabled")) {
-                    configs.getMessages().set("Messages." + s, currentlyDisabled);
+                    Main.messagesConfig.getConfig().set("Messages." + s, currentlyDisabled);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, currentlyDisabled);
 
                 }
                 if (s.equalsIgnoreCase("join")) {
-                    configs.getMessages().set("Messages." + s, join);
+                    Main.messagesConfig.getConfig().set("Messages." + s, join);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, join);
 
                 }
                 if (s.equalsIgnoreCase("quit")) {
-                    configs.getMessages().set("Messages." + s, quit);
+                    Main.messagesConfig.getConfig().set("Messages." + s, quit);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, quit);
 
                 }
                 if (s.equalsIgnoreCase("reloadIn")) {
-                    configs.getMessages().set("Messages." + s, reloadIn);
+                    Main.messagesConfig.getConfig().set("Messages." + s, reloadIn);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, reloadIn);
 
                 }
                 if (s.equalsIgnoreCase("reloadCancelled")) {
-                    configs.getMessages().set("Messages." + s, reloadCancelled);
+                    Main.messagesConfig.getConfig().set("Messages." + s, reloadCancelled);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, reloadCancelled);
 
                 }
                 if (s.equalsIgnoreCase("reloadAwaitingConfirmation")) {
-                    configs.getMessages().set("Messages." + s, reloadAwaitingConfirmation);
+                    Main.messagesConfig.getConfig().set("Messages." + s, reloadAwaitingConfirmation);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, reloadAwaitingConfirmation);
 
                 }
                 if (s.equalsIgnoreCase("serverReloaded")) {
-                    configs.getMessages().set("Messages." + s, serverReloaded);
+                    Main.messagesConfig.getConfig().set("Messages." + s, serverReloaded);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, serverReloaded);
 
                 }
                 if (s.equalsIgnoreCase("pfLoaded")) {
-                    configs.getMessages().set("Messages." + s, pfLoaded);
+                    Main.messagesConfig.getConfig().set("Messages." + s, pfLoaded);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, pfLoaded);
 
                 }
                 if (s.equalsIgnoreCase("sendToServer")) {
-                    configs.getMessages().set("Messages." + s, sendToServer);
+                    Main.messagesConfig.getConfig().set("Messages." + s, sendToServer);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, sendToServer);
 
                 }
                 if (s.equalsIgnoreCase("inventoryResetManual")) {
-                    configs.getMessages().set("Messages." + s, inventoryResetManual);
+                    Main.messagesConfig.getConfig().set("Messages." + s, inventoryResetManual);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, inventoryResetManual);
 
                 }
                 if (s.equalsIgnoreCase("resetAllInventory")) {
-                    configs.getMessages().set("Messages." + s, resetAllInventory);
+                    Main.messagesConfig.getConfig().set("Messages." + s, resetAllInventory);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, resetAllInventory);
 
                 }
                 if (s.equalsIgnoreCase("noPermissionServer")) {
-                    configs.getMessages().set("Messages." + s, noPermissionServer);
+                    Main.messagesConfig.getConfig().set("Messages." + s, noPermissionServer);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, noPermissionServer);
 
                 }
                 if (s.equalsIgnoreCase("cantUseHere")) {
-                    configs.getMessages().set("Messages." + s, cantUseHere);
+                    Main.messagesConfig.getConfig().set("Messages." + s, cantUseHere);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, cantUseHere);
 
                 }
                 if (s.equalsIgnoreCase("helpHeader")) {
-                    configs.getMessages().set("Messages." + s, helpHeader);
+                    Main.messagesConfig.getConfig().set("Messages." + s, helpHeader);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, helpHeader);
 
                 }
                 if (s.equalsIgnoreCase("helpFooter1")) {
-                    configs.getMessages().set("Messages." + s, helpFooter1);
+                    Main.messagesConfig.getConfig().set("Messages." + s, helpFooter1);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, helpFooter1);
 
                 }
                 if (s.equalsIgnoreCase("helpFooter2")) {
-                    configs.getMessages().set("Messages." + s, helpFooter2);
+                    Main.messagesConfig.getConfig().set("Messages." + s, helpFooter2);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, helpFooter2);
 
                 }
                 if (s.equalsIgnoreCase("helpEmpty")) {
-                    configs.getMessages().set("Messages." + s, helpEmpty);
+                    Main.messagesConfig.getConfig().set("Messages." + s, helpEmpty);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, helpEmpty);
 
                 }
                 if (s.equalsIgnoreCase("help1")) {
-                    configs.getMessages().set("Messages." + s, help1);
+                    Main.messagesConfig.getConfig().set("Messages." + s, help1);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, help1);
 
                 }
                 if (s.equalsIgnoreCase("help2")) {
-                    configs.getMessages().set("Messages." + s, help2);
+                    Main.messagesConfig.getConfig().set("Messages." + s, help2);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, help2);
 
                 }
                 if (s.equalsIgnoreCase("help3")) {
-                    configs.getMessages().set("Messages." + s, help3);
+                    Main.messagesConfig.getConfig().set("Messages." + s, help3);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, help3);
 
                 }
                 if (s.equalsIgnoreCase("kotl")) {
-                    configs.getMessages().set("Messages." + s, kotl);
+                    Main.messagesConfig.getConfig().set("Messages." + s, kotl);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, kotl);
 
                 }
                 if (s.equalsIgnoreCase("kotl_enter")) {
-                    configs.getMessages().set("Messages." + s, kotl_enter);
+                    Main.messagesConfig.getConfig().set("Messages." + s, kotl_enter);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, kotl_enter);
 
                 }
                 if (s.equalsIgnoreCase("kotl_leave")) {
-                    configs.getMessages().set("Messages." + s, kotl_leave);
+                    Main.messagesConfig.getConfig().set("Messages." + s, kotl_leave);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, kotl_leave);
 
                 }
                 if (s.equalsIgnoreCase("kotl_newLeader")) {
-                    configs.getMessages().set("Messages." + s, kotl_newLeader);
+                    Main.messagesConfig.getConfig().set("Messages." + s, kotl_newLeader);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, kotl_newLeader);
 
                 }
                 if (s.equalsIgnoreCase("kotl_youAreNewLeader")) {
-                    configs.getMessages().set("Messages." + s, kotl_youAreNewLeader);
+                    Main.messagesConfig.getConfig().set("Messages." + s, kotl_youAreNewLeader);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, kotl_youAreNewLeader);
 
                 }
                 if (s.equalsIgnoreCase("kotl_currentLeader")) {
-                    configs.getMessages().set("Messages." + s, kotl_currentLeader);
+                    Main.messagesConfig.getConfig().set("Messages." + s, kotl_currentLeader);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, kotl_currentLeader);
 
                 }
                 if (s.equalsIgnoreCase("kotl_leaderLeft")) {
-                    configs.getMessages().set("Messages." + s, kotl_leaderLeft);
+                    Main.messagesConfig.getConfig().set("Messages." + s, kotl_leaderLeft);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, kotl_leaderLeft);
 
                 }
                 if (s.equalsIgnoreCase("kotl_noLongerLeader")) {
-                    configs.getMessages().set("Messages." + s, kotl_noLongerLeader);
+                    Main.messagesConfig.getConfig().set("Messages." + s, kotl_noLongerLeader);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, kotl_noLongerLeader);
 
                 }
                 if (s.equalsIgnoreCase("kotl_died")) {
-                    configs.getMessages().set("Messages." + s, kotl_died);
+                    Main.messagesConfig.getConfig().set("Messages." + s, kotl_died);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, kotl_died);
 
                 }
                 if (s.equalsIgnoreCase("pvp")) {
-                    configs.getMessages().set("Messages." + s, pvp);
+                    Main.messagesConfig.getConfig().set("Messages." + s, pvp);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, pvp);
 
                 }
                 if (s.equalsIgnoreCase("pvp_enabled")) {
-                    configs.getMessages().set("Messages." + s, pvp_enabled);
+                    Main.messagesConfig.getConfig().set("Messages." + s, pvp_enabled);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, pvp_enabled);
 
                 }
                 if (s.equalsIgnoreCase("pvp_disabled")) {
-                    configs.getMessages().set("Messages." + s, pvp_disabled);
+                    Main.messagesConfig.getConfig().set("Messages." + s, pvp_disabled);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, pvp_disabled);
 
                 }
                 if (s.equalsIgnoreCase("pvp_cantHit")) {
-                    configs.getMessages().set("Messages." + s, pvp_cantHit);
+                    Main.messagesConfig.getConfig().set("Messages." + s, pvp_cantHit);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, pvp_cantHit);
 
                 }
                 if (s.equalsIgnoreCase("pvp_killedBy")) {
-                    configs.getMessages().set("Messages." + s, pvp_killedBy);
+                    Main.messagesConfig.getConfig().set("Messages." + s, pvp_killedBy);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, pvp_killedBy);
 
                 }
                 if (s.equalsIgnoreCase("pvp_youKilled")) {
-                    configs.getMessages().set("Messages." + s, pvp_youKilled);
+                    Main.messagesConfig.getConfig().set("Messages." + s, pvp_youKilled);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, pvp_youKilled);
 
                 }
                 if (s.equalsIgnoreCase("snowball_onFloor")) {
-                    configs.getMessages().set("Messages." + s, snowball_onFloor);
+                    Main.messagesConfig.getConfig().set("Messages." + s, snowball_onFloor);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, snowball_onFloor);
 
                 }
                 if (s.equalsIgnoreCase("parkour")) {
-                    configs.getMessages().set("Messages." + s, parkour);
+                    Main.messagesConfig.getConfig().set("Messages." + s, parkour);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, parkour);
 
                 }
                 if (s.equalsIgnoreCase("parkour_start")) {
-                    configs.getMessages().set("Messages." + s, parkour_start);
+                    Main.messagesConfig.getConfig().set("Messages." + s, parkour_start);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, parkour_start);
 
                 }
                 if (s.equalsIgnoreCase("parkour_stop")) {
-                    configs.getMessages().set("Messages." + s, parkour_stop);
+                    Main.messagesConfig.getConfig().set("Messages." + s, parkour_stop);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, parkour_stop);
 
                 }
                 if (s.equalsIgnoreCase("parkour_finish")) {
-                    configs.getMessages().set("Messages." + s, parkour_finish);
+                    Main.messagesConfig.getConfig().set("Messages." + s, parkour_finish);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, parkour_finish);
 
                 }
                 if (s.equalsIgnoreCase("parkour_notStarted")) {
-                    configs.getMessages().set("Messages." + s, parkour_notStarted);
+                    Main.messagesConfig.getConfig().set("Messages." + s, parkour_notStarted);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, parkour_notStarted);
 
                 }
                 if (s.equalsIgnoreCase("parkour_chp")) {
-                    configs.getMessages().set("Messages." + s, parkour_chp);
+                    Main.messagesConfig.getConfig().set("Messages." + s, parkour_chp);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, parkour_chp);
 
                 }
                 if (s.equalsIgnoreCase("parkour_error")) {
-                    configs.getMessages().set("Messages." + s, parkour_error);
+                    Main.messagesConfig.getConfig().set("Messages." + s, parkour_error);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, parkour_error);
 
                 }
                 if (s.equalsIgnoreCase("parkour_teleport_start")) {
-                    configs.getMessages().set("Messages." + s, parkour_teleport_start);
+                    Main.messagesConfig.getConfig().set("Messages." + s, parkour_teleport_start);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, parkour_teleport_start);
 
                 }
                 if (s.equalsIgnoreCase("parkour_teleport")) {
-                    configs.getMessages().set("Messages." + s, parkour_teleport);
+                    Main.messagesConfig.getConfig().set("Messages." + s, parkour_teleport);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, parkour_teleport);
 
                 }
                 if (s.equalsIgnoreCase("parkour_left_reload")) {
-                    configs.getMessages().set("Messages." + s, parkour_left_reload);
+                    Main.messagesConfig.getConfig().set("Messages." + s, parkour_left_reload);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, parkour_left_reload);
 
                 }
                 if (s.equalsIgnoreCase("parkour_noPermission")) {
-                    configs.getMessages().set("Messages." + s, parkour_noPermission);
+                    Main.messagesConfig.getConfig().set("Messages." + s, parkour_noPermission);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, parkour_noPermission);
 
                 }
                 if (s.equalsIgnoreCase("parkour_alreadyCompleted")) {
-                    configs.getMessages().set("Messages." + s, parkour_alreadyCompleted);
+                    Main.messagesConfig.getConfig().set("Messages." + s, parkour_alreadyCompleted);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, parkour_alreadyCompleted);
 
                 }
                 if (s.equalsIgnoreCase("parkour_useParkourToReturn")) {
-                    configs.getMessages().set("Messages." + s, parkour_useParkourToReturn);
+                    Main.messagesConfig.getConfig().set("Messages." + s, parkour_useParkourToReturn);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, parkour_useParkourToReturn);
 
                 }
                 if (s.equalsIgnoreCase("parkour_isInParkour")) {
-                    configs.getMessages().set("Messages." + s, parkour_isInParkour);
+                    Main.messagesConfig.getConfig().set("Messages." + s, parkour_isInParkour);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, parkour_isInParkour);
 
                 }
                 if (s.equalsIgnoreCase("maze")) {
-                    configs.getMessages().set("Messages." + s, maze);
+                    Main.messagesConfig.getConfig().set("Messages." + s, maze);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, maze);
 
                 }
                 if (s.equalsIgnoreCase("maze_start")) {
-                    configs.getMessages().set("Messages." + s, maze_start);
+                    Main.messagesConfig.getConfig().set("Messages." + s, maze_start);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, maze_start);
 
                 }
                 if (s.equalsIgnoreCase("maze_stop")) {
-                    configs.getMessages().set("Messages." + s, maze_stop);
+                    Main.messagesConfig.getConfig().set("Messages." + s, maze_stop);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, maze_stop);
 
                 }
                 if (s.equalsIgnoreCase("maze_left_reload")) {
-                    configs.getMessages().set("Messages." + s, maze_left_reload);
+                    Main.messagesConfig.getConfig().set("Messages." + s, maze_left_reload);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, maze_left_reload);
 
                 }
                 if (s.equalsIgnoreCase("maze_finish")) {
-                    configs.getMessages().set("Messages." + s, maze_finish);
+                    Main.messagesConfig.getConfig().set("Messages." + s, maze_finish);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, maze_finish);
 
                 }
                 if (s.equalsIgnoreCase("maze_notStarted")) {
-                    configs.getMessages().set("Messages." + s, maze_notStarted);
+                    Main.messagesConfig.getConfig().set("Messages." + s, maze_notStarted);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, maze_notStarted);
 
                 }
                 if (s.equalsIgnoreCase("maze_loaded")) {
-                    configs.getMessages().set("Messages." + s, maze_loaded);
+                    Main.messagesConfig.getConfig().set("Messages." + s, maze_loaded);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, maze_loaded);
 
                 }
                 if (s.equalsIgnoreCase("maze_loaded_done")) {
-                    configs.getMessages().set("Messages." + s, maze_loaded_done);
+                    Main.messagesConfig.getConfig().set("Messages." + s, maze_loaded_done);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, maze_loaded_done);
 
                 }
                 if (s.equalsIgnoreCase("maze_nameTaken")) {
-                    configs.getMessages().set("Messages." + s, maze_nameTaken);
+                    Main.messagesConfig.getConfig().set("Messages." + s, maze_nameTaken);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, maze_nameTaken);
 
                 }
                 if (s.equalsIgnoreCase("maze_givenSelector")) {
-                    configs.getMessages().set("Messages." + s, maze_givenSelector);
+                    Main.messagesConfig.getConfig().set("Messages." + s, maze_givenSelector);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, maze_givenSelector);
 
                 }
                 if (s.equalsIgnoreCase("maze_selectArea")) {
-                    configs.getMessages().set("Messages." + s, maze_selectArea);
+                    Main.messagesConfig.getConfig().set("Messages." + s, maze_selectArea);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, maze_selectArea);
 
                 }
                 if (s.equalsIgnoreCase("maze_location1set")) {
-                    configs.getMessages().set("Messages." + s, maze_location1set);
+                    Main.messagesConfig.getConfig().set("Messages." + s, maze_location1set);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, maze_location1set);
 
                 }
                 if (s.equalsIgnoreCase("maze_location2set")) {
-                    configs.getMessages().set("Messages." + s, maze_location2set);
+                    Main.messagesConfig.getConfig().set("Messages." + s, maze_location2set);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, maze_location2set);
 
                 }
                 if (s.equalsIgnoreCase("maze_mustSelectBlock")) {
-                    configs.getMessages().set("Messages." + s, maze_mustSelectBlock);
+                    Main.messagesConfig.getConfig().set("Messages." + s, maze_mustSelectBlock);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, maze_mustSelectBlock);
 
                 }
                 if (s.equalsIgnoreCase("maze_thereWasError")) {
-                    configs.getMessages().set("Messages." + s, maze_thereWasErrorFixed);
+                    Main.messagesConfig.getConfig().set("Messages." + s, maze_thereWasErrorFixed);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, maze_thereWasErrorFixed);
 
                 }
                 if (s.equalsIgnoreCase("maze_created")) {
-                    configs.getMessages().set("Messages." + s, maze_created);
+                    Main.messagesConfig.getConfig().set("Messages." + s, maze_created);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, maze_created);
 
                 }
                 if (s.equalsIgnoreCase("maze_wrongLocation")) {
-                    configs.getMessages().set("Messages." + s, maze_wrongLocation);
+                    Main.messagesConfig.getConfig().set("Messages." + s, maze_wrongLocation);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, maze_wrongLocation);
 
                 }
                 if (s.equalsIgnoreCase("maze_noPermission")) {
-                    configs.getMessages().set("Messages." + s, maze_noPermission);
+                    Main.messagesConfig.getConfig().set("Messages." + s, maze_noPermission);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, maze_noPermission);
 
                 }
                 if (s.equalsIgnoreCase("maze_default")) {
-                    configs.getMessages().set("Messages." + s, maze_default);
+                    Main.messagesConfig.getConfig().set("Messages." + s, maze_default);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, maze_default);
 
                 }
                 if (s.equalsIgnoreCase("maze_onlySurvival")) {
-                    configs.getMessages().set("Messages." + s, maze_onlySurvival);
+                    Main.messagesConfig.getConfig().set("Messages." + s, maze_onlySurvival);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, maze_onlySurvival);
 
                 }
                 if (s.equalsIgnoreCase("maze_alreadyCompleted")) {
-                    configs.getMessages().set("Messages." + s, maze_alreadyCompleted);
+                    Main.messagesConfig.getConfig().set("Messages." + s, maze_alreadyCompleted);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, maze_alreadyCompleted);
 
                 }
                 if (s.equalsIgnoreCase("maze_peopleInGame")) {
-                    configs.getMessages().set("Messages." + s, maze_peopleInGame);
+                    Main.messagesConfig.getConfig().set("Messages." + s, maze_peopleInGame);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, maze_peopleInGame);
 
                 }
                 if (s.equalsIgnoreCase("maze_youAreInMaze")) {
-                    configs.getMessages().set("Messages." + s, maze_youAreInMaze);
+                    Main.messagesConfig.getConfig().set("Messages." + s, maze_youAreInMaze);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, maze_youAreInMaze);
 
                 }
                 if (s.equalsIgnoreCase("minigames")) {
-                    configs.getMessages().set("Messages." + s, minigames);
+                    Main.messagesConfig.getConfig().set("Messages." + s, minigames);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, minigames);
 
                 }
                 if (s.equalsIgnoreCase("minigames_bypass")) {
-                    configs.getMessages().set("Messages." + s, minigame_bypass);
+                    Main.messagesConfig.getConfig().set("Messages." + s, minigame_bypass);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, minigame_bypass);
 
                 }
                 if (s.equalsIgnoreCase("minigame_onceADay")) {
-                    configs.getMessages().set("Messages." + s, minigame_onceADay);
+                    Main.messagesConfig.getConfig().set("Messages." + s, minigame_onceADay);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, minigame_onceADay);
 
                 }
                 if (s.equalsIgnoreCase("stats")) {
-                    configs.getMessages().set("Messages." + s, stats);
+                    Main.messagesConfig.getConfig().set("Messages." + s, stats);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, stats);
 
                 }
                 if (s.equalsIgnoreCase("stats_kills")) {
-                    configs.getMessages().set("Messages." + s, stats_kills);
+                    Main.messagesConfig.getConfig().set("Messages." + s, stats_kills);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, stats_kills);
 
                 }
                 if (s.equalsIgnoreCase("stats_deaths")) {
-                    configs.getMessages().set("Messages." + s, stats_deaths);
+                    Main.messagesConfig.getConfig().set("Messages." + s, stats_deaths);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, stats_deaths);
 
                 }
                 if (s.equalsIgnoreCase("stats_joins")) {
-                    configs.getMessages().set("Messages." + s, stats_joins);
+                    Main.messagesConfig.getConfig().set("Messages." + s, stats_joins);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, stats_joins);
 
                 }
                 if (s.equalsIgnoreCase("stats_gems")) {
-                    configs.getMessages().set("Messages." + s, stats_gems);
+                    Main.messagesConfig.getConfig().set("Messages." + s, stats_gems);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, stats_gems);
 
                 }
                 if (s.equalsIgnoreCase("stats_timeOnline")) {
-                    configs.getMessages().set("Messages." + s, stats_timeOnline);
+                    Main.messagesConfig.getConfig().set("Messages." + s, stats_timeOnline);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, stats_timeOnline);
 
                 }
                 if (s.equalsIgnoreCase("stats_1")) {
-                    configs.getMessages().set("Messages." + s, stats_1);
+                    Main.messagesConfig.getConfig().set("Messages." + s, stats_1);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, stats_1);
 
                 }
                 if (s.equalsIgnoreCase("stats_2")) {
-                    configs.getMessages().set("Messages." + s, stats_2);
+                    Main.messagesConfig.getConfig().set("Messages." + s, stats_2);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, stats_2);
 
                 }
                 if (s.equalsIgnoreCase("chair")) {
-                    configs.getMessages().set("Messages." + s, chair);
+                    Main.messagesConfig.getConfig().set("Messages." + s, chair);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, chair);
 
                 }
                 if (s.equalsIgnoreCase("chair_sitting")) {
-                    configs.getMessages().set("Messages." + s, chair_sitting);
+                    Main.messagesConfig.getConfig().set("Messages." + s, chair_sitting);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, chair_sitting);
 
                 }
                 if (s.equalsIgnoreCase("chair_standing")) {
-                    configs.getMessages().set("Messages." + s, chair_standing);
+                    Main.messagesConfig.getConfig().set("Messages." + s, chair_standing);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, chair_standing);
 
                 }
                 if (s.equalsIgnoreCase("pfm_addMoneyDisabled")) {
-                    configs.getMessages().set("Messages." + s, pfm_addMoneyDisabled);
+                    Main.messagesConfig.getConfig().set("Messages." + s, pfm_addMoneyDisabled);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, pfm_addMoneyDisabled);
 
                 }
                 if (s.equalsIgnoreCase("pfm_addStrengthDisabled")) {
-                    configs.getMessages().set("Messages." + s, pfm_addStrengthDisabled);
+                    Main.messagesConfig.getConfig().set("Messages." + s, pfm_addStrengthDisabled);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, pfm_addStrengthDisabled);
 
                 }
                 if (s.equalsIgnoreCase("pfm_pvpLevelUp")) {
-                    configs.getMessages().set("Messages." + s, pfm_pvpLevelUp);
+                    Main.messagesConfig.getConfig().set("Messages." + s, pfm_pvpLevelUp);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, pfm_pvpLevelUp);
 
                 }
                 if (s.equalsIgnoreCase("pfm_pvpNewLevel")) {
-                    configs.getMessages().set("Messages." + s, pfm_pvpNewLevel);
+                    Main.messagesConfig.getConfig().set("Messages." + s, pfm_pvpNewLevel);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, pfm_pvpNewLevel);
 
                 }
                 if (s.equalsIgnoreCase("pfm_pvp1o4left")) {
-                    configs.getMessages().set("Messages." + s, pfm_pvp1o4left);
+                    Main.messagesConfig.getConfig().set("Messages." + s, pfm_pvp1o4left);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, pfm_pvp1o4left);
 
                 }
                 if (s.equalsIgnoreCase("pfm_pvp2o4left")) {
-                    configs.getMessages().set("Messages." + s, pfm_pvp2o4left);
+                    Main.messagesConfig.getConfig().set("Messages." + s, pfm_pvp2o4left);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, pfm_pvp2o4left);
 
                 }
                 if (s.equalsIgnoreCase("pfm_pvp3o4left")) {
-                    configs.getMessages().set("Messages." + s, pfm_pvp3o4left);
+                    Main.messagesConfig.getConfig().set("Messages." + s, pfm_pvp3o4left);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, pfm_pvp3o4left);
 
                 }
                 if (s.equalsIgnoreCase("pfm_pvpFinalLevel")) {
-                    configs.getMessages().set("Messages." + s, pfm_pvpFinalLevel);
+                    Main.messagesConfig.getConfig().set("Messages." + s, pfm_pvpFinalLevel);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, pfm_pvpFinalLevel);
 
                 }
                 if (s.equalsIgnoreCase("pfm_broadcastNewLevel")) {
-                    configs.getMessages().set("Messages." + s, pfm_broadcastNewLevel);
+                    Main.messagesConfig.getConfig().set("Messages." + s, pfm_broadcastNewLevel);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, pfm_broadcastNewLevel);
 
                 }
                 if (s.equalsIgnoreCase("ownerPrefix")) {
-                    configs.getMessages().set("Messages." + s, ownerPrefix);
+                    Main.messagesConfig.getConfig().set("Messages." + s, ownerPrefix);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, ownerPrefix);
 
                 }
                 if (s.equalsIgnoreCase("sparkPrefix")) {
-                    configs.getMessages().set("Messages." + s, sparkPrefix);
+                    Main.messagesConfig.getConfig().set("Messages." + s, sparkPrefix);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, sparkPrefix);
 
                 }
                 if (s.equalsIgnoreCase("reloadingConfig")) {
-                    configs.getMessages().set("Messages." + s, reloadingConfig);
+                    Main.messagesConfig.getConfig().set("Messages." + s, reloadingConfig);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, reloadingConfig);
 
                 }
                 if (s.equalsIgnoreCase("reloadedConfig")) {
-                    configs.getMessages().set("Messages." + s, reloadedConfig);
+                    Main.messagesConfig.getConfig().set("Messages." + s, reloadedConfig);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, reloadedConfig);
 
                 }
                 if (s.equalsIgnoreCase("errorGettingMessageFix")) {
-                    configs.getMessages().set("Messages." + s, errorGettingMessageFix);
+                    Main.messagesConfig.getConfig().set("Messages." + s, errorGettingMessageFix);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, errorGettingMessageFix);
 
                 }
                 if (s.equalsIgnoreCase("errorLoadingMessageFix")) {
-                    configs.getMessages().set("Messages." + s, errorLoadingMessageFix);
+                    Main.messagesConfig.getConfig().set("Messages." + s, errorLoadingMessageFix);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, errorLoadingMessageFix);
 
                 }
                 if (s.equalsIgnoreCase("loadedMessage")) {
-                    configs.getMessages().set("Messages." + s, loadedMessage);
+                    Main.messagesConfig.getConfig().set("Messages." + s, loadedMessage);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, loadedMessage);
 
                 }
                 if (s.equalsIgnoreCase("errorGettingMessage")) {
-                    configs.getMessages().set("Messages." + s, errorGettingMessage);
+                    Main.messagesConfig.getConfig().set("Messages." + s, errorGettingMessage);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, errorGettingMessage);
 
                 }
                 if (s.equalsIgnoreCase("messagesLoaded")) {
-                    configs.getMessages().set("Messages." + s, messagesLoaded);
+                    Main.messagesConfig.getConfig().set("Messages." + s, messagesLoaded);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, messagesLoaded);
                 }
                 if (s.equalsIgnoreCase("autoBroadcastIntervalDefault")) {
-                    configs.getMessages().set("Messages." + s, autoBroadcastIntervalDefault);
+                    Main.messagesConfig.getConfig().set("Messages." + s, autoBroadcastIntervalDefault);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, autoBroadcastIntervalDefault);
 
                 }
                 if (s.equalsIgnoreCase("errorGettingAutoBroadcastMessage")) {
-                    configs.getMessages().set("Messages." + s, errorGettingAutoBroadcastMessage);
+                    Main.messagesConfig.getConfig().set("Messages." + s, errorGettingAutoBroadcastMessage);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, errorGettingAutoBroadcastMessage);
 
                 }
                 if (s.equalsIgnoreCase("autoBroadcastPrefix")) {
-                    configs.getMessages().set("Messages." + s, autoBroadcastPrefix);
+                    Main.messagesConfig.getConfig().set("Messages." + s, autoBroadcastPrefix);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, autoBroadcastPrefix);
 
                 }
                 if (s.equalsIgnoreCase("autoBroadcastTimeSet")) {
-                    configs.getMessages().set("Messages." + s, autoBroadcastTimeSet);
+                    Main.messagesConfig.getConfig().set("Messages." + s, autoBroadcastTimeSet);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, autoBroadcastTimeSet);
 
                 }
                 if (s.equalsIgnoreCase("autoBroadcastMessagesLoaded")) {
-                    configs.getMessages().set("Messages." + s, autoBroadcastMessagesLoaded);
+                    Main.messagesConfig.getConfig().set("Messages." + s, autoBroadcastMessagesLoaded);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, autoBroadcastMessagesLoaded);
 
                 }
                 if (s.equalsIgnoreCase("autoBroadcastMessages")) {
-                    configs.getMessages().set("Messages." + s, autoBroadcastMessages);
+                    Main.messagesConfig.getConfig().set("Messages." + s, autoBroadcastMessages);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, autoBroadcastMessages);
 
                 }
                 if (s.equalsIgnoreCase("newMazeAmount")) {
-                    configs.getMessages().set("Messages." + s, newMazeAmount);
+                    Main.messagesConfig.getConfig().set("Messages." + s, newMazeAmount);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, newMazeAmount);
 
                 }
                 if (s.equalsIgnoreCase("mustBeNumber")) {
-                    configs.getMessages().set("Messages." + s, mustBeNumber);
+                    Main.messagesConfig.getConfig().set("Messages." + s, mustBeNumber);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, mustBeNumber);
 
                 }
                 if (s.equalsIgnoreCase("numberTooHigh")) {
-                    configs.getMessages().set("Messages." + s, numberTooHigh);
+                    Main.messagesConfig.getConfig().set("Messages." + s, numberTooHigh);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, numberTooHigh);
                 }
                 if (s.equalsIgnoreCase("mazeAmount")) {
-                    configs.getMessages().set("Messages." + s, mazeAmount);
+                    Main.messagesConfig.getConfig().set("Messages." + s, mazeAmount);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, mazeAmount);
                 }
                 if (s.equalsIgnoreCase("maze_loaded_set")) {
-                    configs.getMessages().set("Messages." + s, maze_loaded_set);
+                    Main.messagesConfig.getConfig().set("Messages." + s, maze_loaded_set);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, maze_loaded_set);
                 }
                 if (s.equalsIgnoreCase("stats_pvpLevel")) {
-                    configs.getMessages().set("Messages." + s, stats_pvpLevel);
+                    Main.messagesConfig.getConfig().set("Messages." + s, stats_pvpLevel);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, stats_pvpLevel);
                 }
                 if (s.equalsIgnoreCase("stats_expLevel")) {
-                    configs.getMessages().set("Messages." + s, stats_expLevel);
+                    Main.messagesConfig.getConfig().set("Messages." + s, stats_expLevel);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, stats_expLevel);
                 }
                 if (s.equalsIgnoreCase("pluginDisabled")) {
-                    configs.getMessages().set("Messages." + s, pluginDisabled);
+                    Main.messagesConfig.getConfig().set("Messages." + s, pluginDisabled);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, pluginDisabled);
                 }
                 if (s.equalsIgnoreCase("clearingEntities")) {
-                    configs.getMessages().set("Messages." + s, clearingEntities);
+                    Main.messagesConfig.getConfig().set("Messages." + s, clearingEntities);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, clearingEntities);
                 }
                 if (s.equalsIgnoreCase("reloading")) {
-                    configs.getMessages().set("Messages." + s, reloading);
+                    Main.messagesConfig.getConfig().set("Messages." + s, reloading);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, reloading);
                 }
                 if (s.equalsIgnoreCase("barToggled")) {
-                    configs.getMessages().set("Messages." + s, barToggled);
+                    Main.messagesConfig.getConfig().set("Messages." + s, barToggled);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, barToggled);
                 }
                 if (s.equalsIgnoreCase("PlasmaNetwork")) {
-                    configs.getMessages().set("Messages." + s, PlasmaNetwork);
+                    Main.messagesConfig.getConfig().set("Messages." + s, PlasmaNetwork);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, PlasmaNetwork);
                 }
                 if (s.equalsIgnoreCase("stats_killstreak")) {
-                    configs.getMessages().set("Messages." + s, stats_killstreak);
+                    Main.messagesConfig.getConfig().set("Messages." + s, stats_killstreak);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, stats_killstreak);
                 }
                 if (s.equalsIgnoreCase("stats_longestKillstreak")) {
-                    configs.getMessages().set("Messages." + s, stats_longestKillstreak);
+                    Main.messagesConfig.getConfig().set("Messages." + s, stats_longestKillstreak);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, stats_longestKillstreak);
                 }
                 if (s.equalsIgnoreCase("maze_bugged")) {
-                    configs.getMessages().set("Messages." + s, maze_bugged);
+                    Main.messagesConfig.getConfig().set("Messages." + s, maze_bugged);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, maze_bugged);
                 }
                 if (s.equalsIgnoreCase("maze_loaded_bugged")) {
-                    configs.getMessages().set("Messages." + s, maze_loaded_bugged);
+                    Main.messagesConfig.getConfig().set("Messages." + s, maze_loaded_bugged);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, maze_loaded_bugged);
                 }
                 if (s.equalsIgnoreCase("maze_cannotBeZero")) {
-                    configs.getMessages().set("Messages." + s, maze_cannotBeZero);
+                    Main.messagesConfig.getConfig().set("Messages." + s, maze_cannotBeZero);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, maze_cannotBeZero);
                 }
                 if (s.equalsIgnoreCase("maze_mazeAmount")) {
-                    configs.getMessages().set("Messages." + s, maze_mazeAmount);
+                    Main.messagesConfig.getConfig().set("Messages." + s, maze_mazeAmount);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, maze_mazeAmount);
                 }
                 if (s.equalsIgnoreCase("rewards")) {
-                    configs.getMessages().set("Messages." + s, rewards);
+                    Main.messagesConfig.getConfig().set("Messages." + s, rewards);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, rewards);
                 }
                 if (s.equalsIgnoreCase("dailyRewardsClaimed")) {
-                    configs.getMessages().set("Messages." + s, dailyRewardsClaimed);
+                    Main.messagesConfig.getConfig().set("Messages." + s, dailyRewardsClaimed);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, dailyRewardsClaimed);
                 }
                 if (s.equalsIgnoreCase("dailyRewardUnclaimed")) {
-                    configs.getMessages().set("Messages." + s, dailyRewardUnclaimed);
+                    Main.messagesConfig.getConfig().set("Messages." + s, dailyRewardUnclaimed);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, dailyRewardUnclaimed);
                 }
                 if (s.equalsIgnoreCase("dailyRewardsAlreadyClaimed")) {
-                    configs.getMessages().set("Messages." + s, dailyRewardsAlreadyClaimed);
+                    Main.messagesConfig.getConfig().set("Messages." + s, dailyRewardsAlreadyClaimed);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, dailyRewardsAlreadyClaimed);
                 }
                 if (s.equalsIgnoreCase("welcome")) {
-                    configs.getMessages().set("Messages." + s, welcome);
+                    Main.messagesConfig.getConfig().set("Messages." + s, welcome);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, welcome);
                 }
                 if (s.equalsIgnoreCase("welcomeBack")) {
-                    configs.getMessages().set("Messages." + s, welcomeBack);
+                    Main.messagesConfig.getConfig().set("Messages." + s, welcomeBack);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, welcomeBack);
                 }
                 if (s.equalsIgnoreCase("welcomeNew_1")) {
-                    configs.getMessages().set("Messages." + s, welcomeNew_1);
+                    Main.messagesConfig.getConfig().set("Messages." + s, welcomeNew_1);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, welcomeNew_1);
                 }
                 if (s.equalsIgnoreCase("welcomeNew_2")) {
-                    configs.getMessages().set("Messages." + s, welcomeNew_2);
+                    Main.messagesConfig.getConfig().set("Messages." + s, welcomeNew_2);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, welcomeNew_2);
                 }
                 if (s.equalsIgnoreCase("rewards_gemsAdded")) {
-                    configs.getMessages().set("Messages." + s, rewards_gemsAdded);
+                    Main.messagesConfig.getConfig().set("Messages." + s, rewards_gemsAdded);
                     Main.log("Set default for: " + s + ".");
                     Main.messages.put(s, rewards_gemsAdded);
                 }
+                if (s.equalsIgnoreCase("pingPrefix")) {
+                    Main.messagesConfig.getConfig().set("Messages." + s, pingPrefix);
+                    Main.log("Set default for: " + s + ".");
+                    Main.messages.put(s, pingPrefix);
+                }
             }
         }
-        configs.saveMessages();
+        Main.messagesConfig.saveConfig();
         loadMessages();
     }
 
 //    public void loadMessages() {
 //        Main.log("Loading messages from messages.yml");
-//        if (configs.getMessages().get("Messages.prefix") == null) {
-//            configs.getMessages().set("Messages.prefix", prefix);
+//        if (Main.messagesConfig.getConfig().get("Messages.prefix") == null) {
+//            Main.messagesConfig.getConfig().set("Messages.prefix", prefix);
 //            Main.log(loadedMessage + "prefix");
 //        }
-//        if (configs.getMessages().get("Messages.server") == null) {
-//            configs.getMessages().set("Messages.server", server);
+//        if (Main.messagesConfig.getConfig().get("Messages.server") == null) {
+//            Main.messagesConfig.getConfig().set("Messages.server", server);
 //            Main.log(loadedMessage + "server");
 //        }
-//        if (configs.getMessages().get("Messages.reloadingConfig") == null) {
-//            configs.getMessages().set("Messages.reloadingConfig", reloadingConfig);
+//        if (Main.messagesConfig.getConfig().get("Messages.reloadingConfig") == null) {
+//            Main.messagesConfig.getConfig().set("Messages.reloadingConfig", reloadingConfig);
 //            Main.log(loadedMessage + "reloadingConfig");
 //        }
-//        if (configs.getMessages().get("Messages.reloadedConfig") == null) {
-//            configs.getMessages().set("Messages.reloadedConfig", reloadedConfig);
+//        if (Main.messagesConfig.getConfig().get("Messages.reloadedConfig") == null) {
+//            Main.messagesConfig.getConfig().set("Messages.reloadedConfig", reloadedConfig);
 //            Main.log(loadedMessage + "reloadedConfig");
 //        }
-//        if (configs.getMessages().get("Messages.ownerPrefix") == null) {
-//            configs.getMessages().set("Messages.ownerPrefix", ownerPrefix);
+//        if (Main.messagesConfig.getConfig().get("Messages.ownerPrefix") == null) {
+//            Main.messagesConfig.getConfig().set("Messages.ownerPrefix", ownerPrefix);
 //            Main.log(loadedMessage + "ownerPrefix");
 //        }
-//        if (configs.getMessages().get("Messages.sparkPrefix") == null) {
-//            configs.getMessages().set("Messages.sparkPrefix", sparkPrefix);
+//        if (Main.messagesConfig.getConfig().get("Messages.sparkPrefix") == null) {
+//            Main.messagesConfig.getConfig().set("Messages.sparkPrefix", sparkPrefix);
 //            Main.log(loadedMessage + "sparkPrefix");
 //        }
-//        configs.saveMessages();
-//        Main.messages.put("prefix", configs.getMessages().getString("Messages.prefix"));
-//        Main.messages.put("server", configs.getMessages().getString("Messages.server"));
-//        Main.messages.put("reloadingConfig", configs.getMessages().getString("Messages.reloadingConfig"));
-//        Main.messages.put("reloadedConfig", configs.getMessages().getString("Messages.reloadedConfig"));
-//        Main.messages.put("ownerPrefix", configs.getMessages().getString("Messages.ownerPrefix"));
-//        Main.messages.put("sparkPrefix", configs.getMessages().getString("Messages.sparkPrefix"));
+//        Main.messagesConfig.saveConfig();
+//        Main.messages.put("prefix", Main.messagesConfig.getConfig().getString("Messages.prefix"));
+//        Main.messages.put("server", Main.messagesConfig.getConfig().getString("Messages.server"));
+//        Main.messages.put("reloadingConfig", Main.messagesConfig.getConfig().getString("Messages.reloadingConfig"));
+//        Main.messages.put("reloadedConfig", Main.messagesConfig.getConfig().getString("Messages.reloadedConfig"));
+//        Main.messages.put("ownerPrefix", Main.messagesConfig.getConfig().getString("Messages.ownerPrefix"));
+//        Main.messages.put("sparkPrefix", Main.messagesConfig.getConfig().getString("Messages.sparkPrefix"));
 //    }
 //
 //    public String getMessage(String message) {

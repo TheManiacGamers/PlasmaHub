@@ -3,7 +3,6 @@ package me.yeroc.PlasmaHub.gadgets;
 import com.sk89q.minecraft.util.commands.Command;
 import com.sk89q.minecraft.util.commands.CommandContext;
 import me.yeroc.PlasmaHub.Main;
-import me.yeroc.PlasmaHub.managers.Configs;
 import me.yeroc.PlasmaHub.managers.PermissionsManager;
 import me.yeroc.PlasmaHub.managers.PlayerFileManager;
 import me.yeroc.PlasmaHub.managers.Strings;
@@ -38,7 +37,6 @@ public class GadgetsMenu implements Listener {
     private API api = API.getInstance();
     private PermissionsManager perms = PermissionsManager.getInstance();
     private Strings strings = Strings.getInstance();
-    private Configs configs = Configs.getInstance();
     private ServerSelector serverSelector = ServerSelector.getInstance();
     private RewardsManager rewards = RewardsManager.getInstance();
     private GemsManager gems = GemsManager.getInstance();

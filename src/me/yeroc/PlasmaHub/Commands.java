@@ -6,6 +6,7 @@ import com.sk89q.minecraft.util.commands.CommandContext;
 import com.sk89q.minecraft.util.commands.CommandNumberFormatException;
 import me.yeroc.PlasmaHub.managers.*;
 import me.yeroc.PlasmaHub.utils.API;
+import me.yeroc.PlasmaHub.utils.PingUtil;
 import me.yeroc.PlasmaHub.utils.TitleAPI.TitleAPI;
 import me.yeroc.PlasmaHub.utils.rewards.GemsManager;
 import me.yeroc.PlasmaHub.utils.rewards.RewardsManager;
@@ -42,7 +43,6 @@ public class Commands {
     private API api = API.getInstance();
     private PermissionsManager perms = PermissionsManager.getInstance();
     private Strings strings = Strings.getInstance();
-    private Configs configs = Configs.getInstance();
     private PlayerListener playerListener = PlayerListener.getInstance();
     private RewardsManager rewards = RewardsManager.getInstance();
     private GemsManager gems = GemsManager.getInstance();
@@ -578,8 +578,8 @@ public class Commands {
                 if (args.getString(0).equalsIgnoreCase("reload")) {
                     if (sender.hasPermission(perms.plasma_config_reload)) {
                         sender.sendMessage(strings.getMessage("reloadingConfig"));
-                        configs.reloadConfig();
-                        configs.reloadMessages();
+                        Main.defaultConfig.reloadConfig();
+                        Main.messagesConfig.reloadConfig();
                         if (Main.messages.size() != 0) {
                             Main.messages.clear();
                         }
@@ -587,14 +587,14 @@ public class Commands {
                             Main.autoBroadcastMessages.clear();
                         }
                         if (Main.autoBroadcastTime != null) {
-                            Main.autoBroadcastTime = configs.getConfig().getInt("AutoBroadcast.Interval");
+                            Main.autoBroadcastTime = Main.defaultConfig.getConfig().getInt("AutoBroadcast.Interval");
                         }
                         strings.loadMessages();
                         ab.loadMessages();
                         sender.sendMessage(strings.getMessage("reloadedConfig"));
-                        sender.sendMessage(strings.getMessage("prefix") + strings.getMessage("messagesLoaded") + Main.messages.size() + ".");
-                        sender.sendMessage(strings.getMessage("prefix") + strings.getMessage("autoBroadcastMessagesLoaded") + Main.autoBroadcastMessages.size() + ".");
-                        sender.sendMessage(strings.getMessage("prefix") + strings.getMessage("autoBroadcastTimeSet") + Main.autoBroadcastTime + " minutes.");
+                        sender.sendMessage(strings.getMessage("prefix") + " " + strings.getMessage("messagesLoaded") + Main.messages.size() + ".");
+                        sender.sendMessage(strings.getMessage("prefix") + " " + strings.getMessage("autoBroadcastMessagesLoaded") + Main.autoBroadcastMessages.size() + ".");
+                        sender.sendMessage(strings.getMessage("prefix") + " " + strings.getMessage("autoBroadcastTimeSet") + Main.autoBroadcastTime + " minutes.");
                     } else {
                         sender.sendMessage(strings.getMessage("noPermission"));
                     }
@@ -611,15 +611,43 @@ public class Commands {
 
     public void setSpawn(Player p) {
         Location pLoc = p.getLocation();
-        configs.getConfig().set("Spawn.X", pLoc.getX());
-        configs.getConfig().set("Spawn.Y", pLoc.getY());
-        configs.getConfig().set("Spawn.Z", pLoc.getZ());
-        configs.getConfig().set("Spawn.Yaw", pLoc.getYaw());
-        configs.getConfig().set("Spawn.Pitch", pLoc.getPitch());
-        configs.getConfig().set("Spawn.World", "world");
-        configs.saveConfig();
+        Main.defaultConfig.getConfig().set("Spawn.X", pLoc.getX());
+        Main.defaultConfig.getConfig().set("Spawn.Y", pLoc.getY());
+        Main.defaultConfig.getConfig().set("Spawn.Z", pLoc.getZ());
+        Main.defaultConfig.getConfig().set("Spawn.Yaw", pLoc.getYaw());
+        Main.defaultConfig.getConfig().set("Spawn.Pitch", pLoc.getPitch());
+        Main.defaultConfig.getConfig().set("Spawn.World", "world");
+        Main.defaultConfig.saveConfig();
         Main.spawn = pLoc;
         p.sendMessage(strings.getMessage("spawnSet"));
+    }
+
+    @Command(aliases = "pings", desc = "Show you or another players ping.")
+    public void onPing(CommandContext args, CommandSender sender) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage("You must be a player to execute this command.");
+            return;
+        }
+        final Player p = (Player) sender;
+        if (args.argsLength() == 0) {
+            String ping = "" + PingUtil.getPing(p) + "ms";
+            p.sendMessage(strings.getMessage("pingPrefix") + ChatColor.GREEN + "Your ping is: " + ChatColor.BLUE + ping);
+            return;
+        }
+        if (args.argsLength() == 1) {
+            String target = args.getString(0);
+            Player targetP = Bukkit.getPlayer(target);
+            if (targetP != null) {
+                String targetping = "" + PingUtil.getPing(p) + "ms";
+                p.sendMessage(strings.getMessage("pingPrefix") + ChatColor.GREEN + targetP.getName() + "'s ping is: " + ChatColor.BLUE + targetping);
+            } else {
+                p.sendMessage(strings.getMessage("pingPrefix") + ChatColor.RED + "That player is not online.");
+            }
+            return;
+        }
+        if (args.argsLength() <= 2) {
+            p.sendMessage(strings.getMessage("pingPrefix") + ChatColor.RED + "Too many arguments. /ping [player]");
+        }
     }
 
     @Command(aliases = "servers", desc = "Opens the Server Selector menu")
@@ -858,6 +886,20 @@ public class Commands {
                 if (args.getString(0).equalsIgnoreCase("default")) {
                     if (p.hasPermission(perms.plasma_maze_load)) {
                         if (p.getLocation().getBlock().getRelative(0, -1, 0).getLocation().equals(Main.maze_start)) {
+                            int anyoneInMaze = 0;
+                            for (Player online : Bukkit.getOnlinePlayers()) {
+                                if (Main.maze_isInMaze.get(online.getUniqueId()) == null) {
+                                    Main.maze_isInMaze.put(online.getUniqueId(), "no");
+                                }
+                                if (Main.maze_isInMaze.get(online.getUniqueId()).equalsIgnoreCase("yes")) {
+                                    anyoneInMaze++;
+                                }
+                            }
+                            if (anyoneInMaze >= 2) {
+                                p.sendMessage(strings.getMessage("maze_peopleInGame"));
+                                return;
+                            }
+                            p.sendMessage(strings.getMessage("maze_peopleInGame"));
                             Main.maze_loaded = 1;
                             p.sendMessage(strings.getMessage("maze_loaded") + "Maze " + 1);
                             Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "sudo " + p.getName() + " schematic load maze_1");
@@ -886,6 +928,19 @@ public class Commands {
                 if (args.getString(0).equalsIgnoreCase("set")) {
                     if (p.hasPermission(perms.plasma_maze_load)) {
                         if (p.getLocation().getBlock().getRelative(0, -1, 0).getLocation().equals(Main.maze_start)) {
+                            int anyoneInMaze = 0;
+                            for (Player online : Bukkit.getOnlinePlayers()) {
+                                if (Main.maze_isInMaze.get(online.getUniqueId()) == null) {
+                                    Main.maze_isInMaze.put(online.getUniqueId(), "no");
+                                }
+                                if (Main.maze_isInMaze.get(online.getUniqueId()).equalsIgnoreCase("yes")) {
+                                    anyoneInMaze++;
+                                }
+                            }
+                            if (anyoneInMaze >= 2) {
+                                p.sendMessage(strings.getMessage("maze_peopleInGame"));
+                                return;
+                            }
                             try {
                                 if (args.getInteger(1) == 0) {
                                     p.sendMessage(strings.getMessage("maze_cannotBeZero"));

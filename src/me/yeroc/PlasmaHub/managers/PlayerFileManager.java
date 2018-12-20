@@ -8,19 +8,16 @@ import me.yeroc.PlasmaHub.utils.rewards.GemsManager;
 import me.yeroc.PlasmaHub.utils.rewards.RewardsManager;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.UUID;
 
 /**
  * Created by Corey on 1/12/2018.
  */
-public class PlayerFileManager extends BukkitRunnable {
+public class PlayerFileManager {
 
     private Main plugin;
 
@@ -41,7 +38,6 @@ public class PlayerFileManager extends BukkitRunnable {
     private API api = API.getInstance();
     private PermissionsManager perms = PermissionsManager.getInstance();
     private Strings strings = Strings.getInstance();
-    private Configs configs = Configs.getInstance();
     private ServerSelector serverSelector = ServerSelector.getInstance();
     private RewardsManager rewardsManager = RewardsManager.getInstance();
     private GemsManager gemsManager = GemsManager.getInstance();
@@ -233,6 +229,15 @@ public class PlayerFileManager extends BukkitRunnable {
         Main.pfm_deathstreak.put(p.getUniqueId(), 0);
     }
 
+    public void addTime(Player p, int i) {
+        if (Main.pfm_timeOnline.get(p.getUniqueId()) == null) {
+            Main.pfm_timeOnline.put(p.getUniqueId(), 1);
+        }
+        int oldTime = Main.pfm_timeOnline.get(p.getUniqueId());
+        int newTime = oldTime + i;
+        Main.pfm_timeOnline.put(p.getUniqueId(), newTime);
+    }
+
     public static Yaml getPlayerYaml(Player player) {
         return new Yaml(Main.plugin.getDataFolder().getAbsolutePath() + File.separator + "PlayerData" + File.separator + player.getUniqueId() + ".yml");
     }
@@ -273,6 +278,10 @@ public class PlayerFileManager extends BukkitRunnable {
             return;
         }
         yaml.save();
+        String suuid = p.getUniqueId().toString();
+        Main.uuidConfig.getConfig().set(p.getName(), suuid);
+        Main.uuidConfig.saveConfig();
+        Main.log("[File] " + p.getName().toLowerCase() + " added to uuids.yml");
         Main.log("[File] Created: " + p.getName());
     }
 
@@ -314,10 +323,18 @@ public class PlayerFileManager extends BukkitRunnable {
         if (f.exists()) {
             Yaml yaml = getPlayerYaml(p);
             yaml.save();
+            if (Main.firstJoin.get(p.getUniqueId()) == null) {
+                Main.firstJoin.put(p.getUniqueId(), false);
+            }
+            if (!Main.firstJoin.get(p.getUniqueId())) {
+                p.sendMessage(strings.getMessage("welcomeBack"));
+            }
         } else {
             try {
                 f.createNewFile();
                 create(p);
+                Bukkit.broadcastMessage(strings.getMessage("welcomeNew_1") + ChatColor.RED + p.getName() + strings.getMessage("welcomeNew_2"));
+                p.sendMessage(ChatColor.GREEN + "Welcome to " + ChatColor.DARK_GREEN + "" + ChatColor.BOLD + "PlasmaNetwork" + ChatColor.GREEN + ", " + ChatColor.RED + p.getName() + ChatColor.GREEN + "!");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -340,6 +357,12 @@ public class PlayerFileManager extends BukkitRunnable {
         Main.barEnabled.put(p.getUniqueId(), fc.getString("Toggled.Bar"));
         Main.dailyRewards.put(p.getUniqueId(), fc.getString("DailyRewards.Claimed"));
         Main.log("[File] Loaded: " + p.getName());
+        if (Main.uuidConfig.getConfig().get(p.getName()) == null) {
+            String suuid = p.getUniqueId().toString();
+            Main.uuidConfig.getConfig().set(p.getName().toLowerCase(), suuid);
+            Main.uuidConfig.saveConfig();
+            Main.log("[File] " + p.getName() + " added to uuids.yml - possible name change.");
+        }
     }
 
     public void check(Player p) {
@@ -403,13 +426,7 @@ public class PlayerFileManager extends BukkitRunnable {
         fc.save();
     }
 
-    public void run() {
-        if (Bukkit.getOnlinePlayers().size() != 0) {
-            for (Player p : Bukkit.getOnlinePlayers()) {
-                int oldTime = Main.pfm_timeOnline.get(p.getUniqueId());
-                int newTime = oldTime + 1;
-                Main.pfm_timeOnline.put(p.getUniqueId(), newTime);
-            }
-        }
+    public Yaml getPf(Player p) {
+        return getPlayerYaml(p);
     }
 }

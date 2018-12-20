@@ -35,7 +35,7 @@ import java.util.*;
 /**
  * Created by Corey on 4/12/2018.
  */
-public class PlayerListener extends BukkitRunnable implements Listener {
+public class PlayerListener implements Listener {
 
     private Main plugin;
 
@@ -55,7 +55,6 @@ public class PlayerListener extends BukkitRunnable implements Listener {
     private API api = API.getInstance();
     private PermissionsManager perms = PermissionsManager.getInstance();
     private Strings strings = Strings.getInstance();
-    private Configs configs = Configs.getInstance();
     private RewardsManager rewards = RewardsManager.getInstance();
     private GemsManager gems = GemsManager.getInstance();
     private PlayerFileManager pfm = PlayerFileManager.getInstance();
@@ -85,7 +84,6 @@ public class PlayerListener extends BukkitRunnable implements Listener {
 //        pfm.load(p);
         pfm.load(p);
         pfm.addJoins(p, 1);
-        Main.log(strings.getMessage("pfLoaded") + p.getName());
         p.getInventory().setHeldItemSlot(0);
         p.setAllowFlight(true);
         p.setFlying(false);
@@ -191,8 +189,10 @@ public class PlayerListener extends BukkitRunnable implements Listener {
         }
         if (p.getGameMode().equals(GameMode.SURVIVAL) && p.getLocation().getBlock().getRelative(0, -1, 0).getType().equals(Material.SLIME_BLOCK) && (!(p.getLocation().getBlock().getRelative(0, -1, 0).getLocation().equals(Main.slimeBlock)))) {
             if (!(p.isSneaking())) {
-                p.setVelocity(p.getLocation().getDirection().multiply(0).setY(4.0));
+                Random r = new Random();
+                p.setVelocity(p.getLocation().getDirection().multiply(0).setY(r.nextInt(4)));
             }
+            return;
         }
         // KOTL CHECKING IF PLAYER IS IN LOCATION
         if (locationIsInCuboid(p, Main.kotl_box1, Main.kotl_box2)) {
@@ -472,47 +472,7 @@ public class PlayerListener extends BukkitRunnable implements Listener {
     public void run() {
         if (Bukkit.getServer().getOnlinePlayers().size() != 0) {
             for (Player p : Bukkit.getOnlinePlayers()) {
-                if (Main.maze_effectedMazes.get(Bukkit.getServer()) != null && (Main.maze_loaded != null)) {
-                    if (Main.maze_effectedMazes.get(Bukkit.getServer()).contains(Main.maze_loaded)) {
-                        if (Main.maze_isInMaze.get(p.getUniqueId()).equalsIgnoreCase("yes")) {
-                            if (Main.maze_playerEffectSeconds.get(p.getUniqueId()) == null) {
-                                Main.maze_playerEffectSeconds.put(p.getUniqueId(), 0);
-                            }
-                            int i = Main.maze_playerEffectSeconds.get(p.getUniqueId());
-                            int newint = i + 1;
-                            Main.maze_playerEffectSeconds.put(p.getUniqueId(), newint);
-                            if (i == 25) {
-                                Main.maze_playerEffectSeconds.put(p.getUniqueId(), 0);
-                                randomPotion(p);
-                                return;
-                            }
-                        }
-                    }
-                }
-                if (Main.parkour_isInParkour.get(p.getUniqueId()).equalsIgnoreCase("yes")) {
-//                    TitleAPI.sendTitle(p, 0, 25, 0, strings.getMessage("parkour_isInParkour);
-                    return;
-                }
-                if (Main.maze_isInMaze.get(p.getUniqueId()).equalsIgnoreCase("yes")) {
-//                    TitleAPI.sendTitle(p, 0, 25, 0, strings.getMessage("maze_youAreInMaze);
-                    return;
-                }
-                if (Main.kotl_player.equalsIgnoreCase(null) || (Main.kotl_player.equalsIgnoreCase("blank"))) {
-                    return;
-                }
-                if (Main.kotl_player.equalsIgnoreCase(p.getName())) {
-                    if (Bukkit.getOnlinePlayers().size() >= 2 && (Main.kotl_playersInRegion.size() >= 2) && (Main.kotl_playerInRegion.get(p.getUniqueId()).equalsIgnoreCase("yes"))) {
-                        if (Main.kotl_secondsAsKotl.get(p.getUniqueId()) == null) {
-                            Main.kotl_secondsAsKotl.put(p.getUniqueId(), 1);
-                            return;
-                        }
-                        int kotlTime = (Main.kotl_secondsAsKotl.get(p.getUniqueId()));
-                        int kotlTimeNew = kotlTime + 1;
-                        Main.kotl_secondsAsKotl.put(p.getUniqueId(), kotlTimeNew);
-                    }
-                } else {
-                    Main.kotl_secondsAsKotl.remove(p.getUniqueId());
-                }
+
             }
         }
     }
@@ -561,11 +521,7 @@ public class PlayerListener extends BukkitRunnable implements Listener {
         {
             Main.parkour_isInParkour.put(p.getUniqueId(), "no");
         }
-        if (e.getAction().
-
-                equals(Action.RIGHT_CLICK_BLOCK))
-
-        {
+        if (e.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
             if (p.getItemInHand().getType().equals(Material.NETHER_STAR)) {
                 if (!(p.hasPermission(perms.plasma_gadgetsmenu_use))) {
                     if (p.getOpenInventory() != null) {
@@ -638,6 +594,20 @@ public class PlayerListener extends BukkitRunnable implements Listener {
                                 Main.maze_isInMaze.put(p.getUniqueId(), "no");
                                 Main.pfm_completedMaze.put(p.getUniqueId(), date);
                                 p.sendMessage(strings.getMessage("maze_finish"));
+                                for (Player on : Bukkit.getOnlinePlayers()) {
+                                    if (Main.maze_isInMaze.get(on.getUniqueId()).equalsIgnoreCase("yes")) {
+                                        on.sendMessage(strings.getMessage("maze") + ChatColor.GREEN + p.getName() + " Just completed the maze!");
+                                    }
+                                }
+                                int gemAmount = 20;
+
+                                if (Main.maze_loaded == 10) {
+                                    RewardsManager.addGems(p, gemAmount * 2);
+                                    p.sendMessage(strings.getMessage("maze") + " This was a difficult maze, so you get twice the gems!");
+                                } else {
+                                    RewardsManager.addGems(p, gemAmount);
+                                    p.sendMessage(strings.getMessage("rewards_gemsAdded") + gemAmount);
+                                }
                                 if (p.getActivePotionEffects().size() != 0) {
                                     for (PotionEffect effect : p.getActivePotionEffects()) {
                                         if (p.getActivePotionEffects().size() == 1) {
@@ -653,11 +623,11 @@ public class PlayerListener extends BukkitRunnable implements Listener {
                                 return;
                             }
                             if (Main.pfm_completedMaze.get(p.getUniqueId()).equals(date)) {
-                                if (!p.hasPermission(perms.plasma_minigame_bypass)) {
-                                    p.sendMessage(strings.getMessage("maze_alreadyCompleted"));
-                                    String thedate = new SimpleDateFormat("dd-MM HH:mm:ss").format(new Date());
-                                    p.sendMessage(strings.getMessage("minigame_onceADay") + thedate);
+                                if (p.hasPermission(perms.plasma_minigame_bypass)) {
                                     Main.maze_isInMaze.put(p.getUniqueId(), "no");
+                                    Main.pfm_completedMaze.put(p.getUniqueId(), date);
+                                    p.sendMessage(strings.getMessage("minigame_bypass"));
+                                    p.sendMessage(strings.getMessage("parkour_finish"));
                                     int gemAmount = 20;
                                     if (Main.maze_loaded == 10) {
                                         RewardsManager.addGems(p, gemAmount * 2);
@@ -681,6 +651,24 @@ public class PlayerListener extends BukkitRunnable implements Listener {
                                     }
                                     return;
                                 }
+                                p.sendMessage(strings.getMessage("maze_alreadyCompleted"));
+                                String thedate = new SimpleDateFormat("dd-MM HH:mm:ss").format(new Date());
+                                p.sendMessage(strings.getMessage("minigame_onceADay") + thedate);
+                                Main.maze_isInMaze.put(p.getUniqueId(), "no");
+                                p.teleport(Main.spawn);
+                                if (p.getActivePotionEffects().size() != 0) {
+                                    for (PotionEffect effect : p.getActivePotionEffects()) {
+                                        if (p.getActivePotionEffects().size() == 1) {
+                                            if (effect.getType().equals(PotionEffectType.GLOWING)) {
+                                                break;
+                                            }
+                                        }
+                                        if (!effect.getType().equals(PotionEffectType.GLOWING)) {
+                                            p.removePotionEffect(effect.getType());
+                                        }
+                                    }
+                                }
+                                return;
                             }
                             Main.maze_isInMaze.put(p.getUniqueId(), "no");
                             Main.pfm_completedMaze.put(p.getUniqueId(), date);
@@ -738,11 +726,7 @@ public class PlayerListener extends BukkitRunnable implements Listener {
             }
             return;
         }
-        if (e.getAction().
-
-                equals(Action.RIGHT_CLICK_AIR))
-
-        {
+        if (e.getAction().equals(Action.RIGHT_CLICK_AIR)) {
             if (p.getItemInHand().getType().equals(Material.NETHER_STAR)) {
                 if (!(p.hasPermission(perms.plasma_gadgetsmenu_use))) {
                     if (p.getOpenInventory() != null) {
@@ -967,6 +951,7 @@ public class PlayerListener extends BukkitRunnable implements Listener {
                     pfm.addCurrentKillstreak(d, 1);
                     pfm.removeCurrentKillstreak(p);
                     pfm.removeDeathStreak(d);
+                    Main.canDoubleJump.put(p.getUniqueId(), "yes");
                     if (pfm.getCurrentKillstreak(d) >= pfm.getLongestKillstreak(d) + 1) {
                         Main.pfm_longestKillstreak.put(d.getUniqueId(), Main.pfm_killstreak.get(d.getUniqueId()));
                         TitleAPI.sendActionBar(d, ChatColor.AQUA + "New longest Killstreak of " + pfm.getCurrentKillstreak(d) + "!");

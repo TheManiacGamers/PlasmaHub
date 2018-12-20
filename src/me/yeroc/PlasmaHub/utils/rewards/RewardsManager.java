@@ -1,16 +1,12 @@
 package me.yeroc.PlasmaHub.utils.rewards;
 
-import com.sk89q.minecraft.util.commands.ChatColor;
 import me.yeroc.PlasmaHub.Main;
-import me.yeroc.PlasmaHub.managers.Configs;
 import me.yeroc.PlasmaHub.managers.PermissionsManager;
 import me.yeroc.PlasmaHub.managers.PlayerFileManager;
 import me.yeroc.PlasmaHub.managers.Strings;
 import me.yeroc.PlasmaHub.serverselector.ServerSelector;
 import me.yeroc.PlasmaHub.utils.API;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
 
 import java.util.Random;
 
@@ -40,7 +36,6 @@ public class RewardsManager {
     private API api = API.getInstance();
     private PermissionsManager perms = PermissionsManager.getInstance();
     private Strings strings = Strings.getInstance();
-    private Configs configs = Configs.getInstance();
     private ServerSelector serverSelector = ServerSelector.getInstance();
     private RewardsManager rewards = RewardsManager.getInstance();
     private GemsManager gems = GemsManager.getInstance();

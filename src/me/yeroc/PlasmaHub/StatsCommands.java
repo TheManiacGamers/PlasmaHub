@@ -4,10 +4,10 @@ import com.sk89q.minecraft.util.commands.ChatColor;
 import com.sk89q.minecraft.util.commands.Command;
 import com.sk89q.minecraft.util.commands.CommandContext;
 import com.sk89q.minecraft.util.commands.CommandNumberFormatException;
-import me.yeroc.PlasmaHub.managers.Configs;
 import me.yeroc.PlasmaHub.managers.PermissionsManager;
 import me.yeroc.PlasmaHub.managers.PlayerFileManager;
 import me.yeroc.PlasmaHub.managers.Strings;
+import me.yeroc.PlasmaHub.managers.Yaml;
 import me.yeroc.PlasmaHub.serverselector.ServerSelector;
 import me.yeroc.PlasmaHub.utils.API;
 import me.yeroc.PlasmaHub.utils.rewards.GemsManager;
@@ -16,6 +16,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -41,7 +42,6 @@ public class StatsCommands {
     private API api = API.getInstance();
     private PermissionsManager perms = PermissionsManager.getInstance();
     private Strings strings = Strings.getInstance();
-    private Configs configs = Configs.getInstance();
     private ServerSelector serverSelector = ServerSelector.getInstance();
     private RewardsManager rewards = RewardsManager.getInstance();
     private GemsManager gems = GemsManager.getInstance();
@@ -55,7 +55,11 @@ public class StatsCommands {
         p.sendMessage(strings.getMessage("stats_timeOnline") + "D:" + day + ", H:" + hours + ", M:" + minute + ", S:" + second);
     }
 
-    @Command(aliases = "stats", desc = "List your statistics.")
+    public static Yaml getOfflinePlayerYaml(String string) {
+        return new Yaml(Main.plugin.getDataFolder().getAbsolutePath() + File.separator + "PlayerData" + File.separator + string + ".yml");
+    }
+
+    @Command(aliases = "stats", desc = "List yours, or another players statistics.")
     public void onStats(CommandContext args, CommandSender sender) {
         if (api.isPlayer(sender)) {
             Player p = (Player) sender;
@@ -65,7 +69,7 @@ public class StatsCommands {
                     Date d = new Date(86400 / sec);
                     SimpleDateFormat df = new SimpleDateFormat("dd:HH:mm:ss");
                     String time = df.format(d);
-                    p.sendMessage(strings.getMessage("stats_1") + p.getName() + strings.getMessage("stats_2"));
+                    p.sendMessage(strings.getMessage("stats_1") + " " + p.getName() + " " + strings.getMessage("stats_2"));
                     p.sendMessage(strings.getMessage("stats_kills") + Main.pfm_kills.get(p.getUniqueId()));
                     p.sendMessage(strings.getMessage("stats_deaths") + Main.pfm_deaths.get(p.getUniqueId()));
                     p.sendMessage(strings.getMessage("stats_joins") + Main.pfm_joins.get(p.getUniqueId()));
@@ -75,7 +79,7 @@ public class StatsCommands {
                     p.sendMessage(strings.getMessage("stats_longestKillstreak") + Main.pfm_longestKillstreak.get(p.getUniqueId()));
                     p.sendMessage(strings.getMessage("stats_pvpExp") + Main.pfm_pvpExp.get(p.getUniqueId()));
                     getTime(p, Main.pfm_timeOnline.get(p.getUniqueId()));
-                    p.sendMessage(strings.getMessage("stats_1") + p.getUniqueId() + strings.getMessage("stats_2"));
+                    p.sendMessage(strings.getMessage("stats_1") + " " + p.getUniqueId() + " " + strings.getMessage("stats_2"));
                     return;
                 }
                 if (args.argsLength() == 1) {
@@ -83,7 +87,7 @@ public class StatsCommands {
                         Player t = Bukkit.getPlayer(args.getString(0));
                         if (t != null) {
                             if (t.isOnline()) {
-                                p.sendMessage(strings.getMessage("stats_1") + t.getName() + strings.getMessage("stats_2"));
+                                p.sendMessage(strings.getMessage("stats_1") + " " + t.getName() + " " + strings.getMessage("stats_2"));
                                 p.sendMessage(strings.getMessage("stats_kills") + Main.pfm_kills.get(t.getUniqueId()));
                                 p.sendMessage(strings.getMessage("stats_deaths") + Main.pfm_deaths.get(t.getUniqueId()));
                                 p.sendMessage(strings.getMessage("stats_joins") + Main.pfm_joins.get(t.getUniqueId()));
@@ -93,12 +97,66 @@ public class StatsCommands {
                                 p.sendMessage(strings.getMessage("stats_longestKillstreak") + Main.pfm_longestKillstreak.get(t.getUniqueId()));
                                 p.sendMessage(strings.getMessage("stats_pvpExp") + Main.pfm_pvpExp.get(t.getUniqueId()));
                                 getTime(p, Main.pfm_timeOnline.get(t.getUniqueId()));
-                                p.sendMessage(strings.getMessage("stats_1") + t.getUniqueId() + strings.getMessage("stats_2"));
+                                p.sendMessage(strings.getMessage("stats_1") + " " + t.getUniqueId() + " " + strings.getMessage("stats_2"));
                             } else {
-                                sender.sendMessage(ChatColor.RED + "That player is not online!");
+                                if (Main.uuidConfig.getConfig() == null) {
+                                    p.sendMessage(strings.getMessage("prefix") + ChatColor.RED + " There was an error getting the UUIDs.yml file. Contact an owner.");
+                                    return;
+                                }
+                                if (Main.uuidConfig.getConfig().getString(args.getString(0).toLowerCase()) == null) {
+                                    p.sendMessage(strings.getMessage("prefix") + ChatColor.RED + " I could not find the player you were looking for.");
+                                    return;
+                                }
+                                Yaml yaml = getOfflinePlayerYaml(Main.uuidConfig.getConfig().getString(args.getString(0).toLowerCase()));
+                                if (yaml.getString("Information.Name") == null) {
+                                    p.sendMessage(strings.getMessage("prefix") + ChatColor.RED + " It does not look like the player has a player file. Have they joined?");
+                                    yaml.delete();
+                                    return;
+                                }
+                                String uuid = Main.uuidConfig.getConfig().getString(args.getString(0).toLowerCase());
+                                String name = yaml.getString("Information.Name");
+                                p.sendMessage(strings.getMessage("stats_1") + " " + ChatColor.DARK_RED + name + " " + strings.getMessage("stats_2"));
+                                p.sendMessage(strings.getMessage("stats_kills") + yaml.getInteger("Statistics.Kills"));
+                                p.sendMessage(strings.getMessage("stats_deaths") + yaml.getInteger("Statistics.Deaths"));
+                                p.sendMessage(strings.getMessage("stats_joins") + yaml.getInteger("Statistics.Joins"));
+                                p.sendMessage(strings.getMessage("stats_gems") + yaml.getInteger("Statistics.Gems"));
+                                p.sendMessage(strings.getMessage("stats_pvpLevel") + yaml.getInteger("Statistics.PVPLevel"));
+                                p.sendMessage(strings.getMessage("stats_killstreak") + yaml.getInteger("Statistics.Current_Killstreak"));
+                                p.sendMessage(strings.getMessage("stats_longestKillstreak") + yaml.getInteger("Statistics.Longest_Killstreak"));
+                                p.sendMessage(strings.getMessage("stats_pvpExp") + yaml.getInteger("Statistics.PVPExp"));
+                                getTime(p, yaml.getInteger("Statistics.Time Online"));
+                                p.sendMessage(strings.getMessage("stats_1") + " " + ChatColor.DARK_RED + uuid + " " + strings.getMessage("stats_2"));
+                                return;
                             }
                         } else {
-                            sender.sendMessage(ChatColor.RED + "That player is not online!");
+                            if (Main.uuidConfig.getConfig() == null) {
+                                p.sendMessage(strings.getMessage("prefix") + ChatColor.RED + " There was an error getting the UUIDs.yml file. Contact an owner.");
+                                return;
+                            }
+                            if (Main.uuidConfig.getConfig().get(args.getString(0).toLowerCase()) == null) {
+                                p.sendMessage(strings.getMessage("prefix") + ChatColor.RED + " I could not find the player you were looking for.");
+                                return;
+                            }
+                            Yaml yaml = getOfflinePlayerYaml(Main.uuidConfig.getConfig().getString(args.getString(0).toLowerCase()));
+                            if (yaml.getString("Information.Name") == null) {
+                                p.sendMessage(strings.getMessage("prefix") + ChatColor.RED + " It does not look like the player has a player file. Have they joined?");
+                                yaml.delete();
+                                return;
+                            }
+                            String uuid = Main.uuidConfig.getConfig().getString(args.getString(0).toLowerCase());
+                            String name = yaml.getString("Information.Name");
+                            p.sendMessage(strings.getMessage("stats_1") + " " + ChatColor.DARK_RED + name + " " + strings.getMessage("stats_2"));
+                            p.sendMessage(strings.getMessage("stats_kills") + yaml.getInteger("Statistics.Kills"));
+                            p.sendMessage(strings.getMessage("stats_deaths") + yaml.getInteger("Statistics.Deaths"));
+                            p.sendMessage(strings.getMessage("stats_joins") + yaml.getInteger("Statistics.Joins"));
+                            p.sendMessage(strings.getMessage("stats_gems") + yaml.getInteger("Statistics.Gems"));
+                            p.sendMessage(strings.getMessage("stats_pvpLevel") + yaml.getInteger("Statistics.PVPLevel"));
+                            p.sendMessage(strings.getMessage("stats_killstreak") + yaml.getInteger("Statistics.Current_Killstreak"));
+                            p.sendMessage(strings.getMessage("stats_longestKillstreak") + yaml.getInteger("Statistics.Longest_Killstreak"));
+                            p.sendMessage(strings.getMessage("stats_pvpExp") + yaml.getInteger("Statistics.PVPExp"));
+                            getTime(p, yaml.getInteger("Statistics.Time Online"));
+                            p.sendMessage(strings.getMessage("stats_1") + " " + ChatColor.DARK_RED + uuid + " " + strings.getMessage("stats_2"));
+                            return;
                         }
                     } else {
                         p.sendMessage(strings.getMessage("noPermission"));
