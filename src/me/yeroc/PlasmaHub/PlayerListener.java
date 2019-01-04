@@ -69,13 +69,13 @@ public class PlayerListener implements Listener {
         Player p = e.getPlayer();
         p.teleport(Main.spawn);
         p.setGameMode(GameMode.SURVIVAL);
-        if (p.getPlayer().getUniqueId().equals(UUID.fromString(mitchell)) || (p.getName().equalsIgnoreCase("Rookie1200")) || (p.getPlayer().getUniqueId().equals(UUID.fromString(corey)) || (p.getName().equalsIgnoreCase("TheManiacGamers")))) {
-            p.setDisplayName(ChatColor.GRAY + "[" + ChatColor.GREEN + pfm.getLevel(p) + ChatColor.GRAY + "]" + strings.getMessage("ownerPrefix") + p.getName() + ChatColor.RESET); // ChatColor.GOLD + "[" + ChatColor.DARK_RED + "Owner" + ChatColor.GOLD + "]" + ChatColor.RED
-        } else if (p.getUniqueId().equals(UUID.fromString(tiyahla)) || (p.getName().equalsIgnoreCase("Tiyahla"))) {
-            p.setDisplayName(ChatColor.GRAY + "[" + ChatColor.GREEN + pfm.getLevel(p) + ChatColor.GRAY + "]" + ChatColor.GOLD + "[" + ChatColor.DARK_RED + "Co-Owner" + ChatColor.GOLD + "]" + ChatColor.RED + p.getName() + ChatColor.RESET); //&6[&4Co-Owner&6]&f
-        } else {
-            p.setDisplayName(ChatColor.GRAY + "[" + ChatColor.GREEN + pfm.getLevel(p) + ChatColor.GRAY + "]" + strings.getMessage("sparkPrefix") + p.getName() + ChatColor.RESET); // ChatColor.AQUA + "[" + ChatColor.BLUE + "Spark" + ChatColor.AQUA + "]" + ChatColor.GRAY
-        }
+//        if (p.getPlayer().getUniqueId().equals(UUID.fromString(mitchell)) || (p.getName().equalsIgnoreCase("Rookie1200")) || (p.getPlayer().getUniqueId().equals(UUID.fromString(corey)) || (p.getName().equalsIgnoreCase("TheManiacGamers")))) {
+//            p.setDisplayName(ChatColor.GRAY + "[" + ChatColor.GREEN + pfm.getLevel(p) + ChatColor.GRAY + "]" + strings.getMessage("ownerPrefix") + p.getName() + ChatColor.RESET); // ChatColor.GOLD + "[" + ChatColor.DARK_RED + "Owner" + ChatColor.GOLD + "]" + ChatColor.RED
+//        } else if (p.getUniqueId().equals(UUID.fromString(tiyahla)) || (p.getName().equalsIgnoreCase("Tiyahla"))) {
+//            p.setDisplayName(ChatColor.GRAY + "[" + ChatColor.GREEN + pfm.getLevel(p) + ChatColor.GRAY + "]" + ChatColor.GOLD + "[" + ChatColor.DARK_RED + "Co-Owner" + ChatColor.GOLD + "]" + ChatColor.RED + p.getName() + ChatColor.RESET); //&6[&4Co-Owner&6]&f
+//        } else {
+//            p.setDisplayName(ChatColor.GRAY + "[" + ChatColor.GREEN + pfm.getLevel(p) + ChatColor.GRAY + "]" + strings.getMessage("sparkPrefix") + p.getName() + ChatColor.RESET); // ChatColor.AQUA + "[" + ChatColor.BLUE + "Spark" + ChatColor.AQUA + "]" + ChatColor.GRAY
+//        }
         api.resetInventory(p);
         if (p.hasPermission(perms.plasma_join_notify)) {
             Bukkit.broadcastMessage(strings.getMessage("join") + p.getName());
@@ -100,7 +100,9 @@ public class PlayerListener implements Listener {
         api.applyAttackSpeed(p);
         String thedate = new SimpleDateFormat("dd-MM").format(new Date());
         if ((Main.dailyRewards.get(p.getUniqueId()) == null || (!(Main.dailyRewards.get(p.getUniqueId()).equalsIgnoreCase(thedate))))) {
-            p.sendMessage(strings.getMessage("dailyRewardUnclaimed"));
+            if (p.hasPermission(perms.plasma_dailyrewards)) {
+                p.sendMessage(strings.getMessage("dailyRewardUnclaimed"));
+            }
         }
     }
 
@@ -190,7 +192,11 @@ public class PlayerListener implements Listener {
         if (p.getGameMode().equals(GameMode.SURVIVAL) && p.getLocation().getBlock().getRelative(0, -1, 0).getType().equals(Material.SLIME_BLOCK) && (!(p.getLocation().getBlock().getRelative(0, -1, 0).getLocation().equals(Main.slimeBlock)))) {
             if (!(p.isSneaking())) {
                 Random r = new Random();
-                p.setVelocity(p.getLocation().getDirection().multiply(0).setY(r.nextInt(4)));
+                int amount = r.nextInt(5);
+                if (amount == 1 || (amount == 2)) {
+                    amount = 3;
+                }
+                p.setVelocity(p.getLocation().getDirection().multiply(0).setY(amount));
             }
             return;
         }
@@ -391,12 +397,18 @@ public class PlayerListener implements Listener {
                 } else {
                     p.teleport(Main.spawn);
                     p.getInventory().setItem(7, new ItemStack(Material.AIR, 1));
+                    Main.canDoubleJump.put(p.getUniqueId(), "yes");
+                    Main.parkour_isInParkour.put(p.getUniqueId(), "no");
                     p.sendMessage(strings.getMessage("parkour_error"));
+                    Main.parkour_playerCheckpoints.put(p.getUniqueId(), "zero");
                 }
             } else {
                 p.teleport(Main.spawn);
                 p.getInventory().setItem(7, new ItemStack(Material.AIR, 1));
+                Main.canDoubleJump.put(p.getUniqueId(), "yes");
+                Main.parkour_isInParkour.put(p.getUniqueId(), "no");
                 p.sendMessage(strings.getMessage("parkour_error"));
+                Main.parkour_playerCheckpoints.put(p.getUniqueId(), "zero");
             }
         }
 
@@ -907,12 +919,24 @@ public class PlayerListener implements Listener {
 //        String corey = ("3d87ff2a-90e9-4e00-acac-1338331b595d");
 //        if (p.getUniqueId().equals(UUID.fromString(corey)) || p.getUniqueId().equals(UUID.fromString(mitchell))) {
         Player p = e.getPlayer();
-        if (p.getPlayer().getUniqueId().equals(UUID.fromString(mitchell)) || (p.getName().equalsIgnoreCase("Rookie1200")) || (p.getPlayer().getUniqueId().equals(UUID.fromString(corey)) || (p.getName().equalsIgnoreCase("TheManiacGamers")))) {
-            p.setDisplayName(ChatColor.GRAY + "[" + ChatColor.GREEN + pfm.getLevel(p) + ChatColor.GRAY + "]" + strings.getMessage("ownerPrefix") + p.getName() + ChatColor.RESET); // ChatColor.GOLD + "[" + ChatColor.DARK_RED + "Owner" + ChatColor.GOLD + "]" + ChatColor.RED
-        } else if (p.getUniqueId().equals(UUID.fromString(tiyahla)) || (p.getName().equalsIgnoreCase("Tiyahla"))) {
-            p.setDisplayName(ChatColor.GRAY + "[" + ChatColor.GREEN + pfm.getLevel(p) + ChatColor.GRAY + "]" + ChatColor.GOLD + "[" + ChatColor.DARK_RED + "Co-Owner" + ChatColor.GOLD + "]" + ChatColor.RED + p.getName() + ChatColor.RESET); //&6[&4Co-Owner&6]&f
-        } else {
-            p.setDisplayName(ChatColor.GRAY + "[" + ChatColor.GREEN + pfm.getLevel(p) + ChatColor.GRAY + "]" + strings.getMessage("sparkPrefix") + p.getName() + ChatColor.RESET); // ChatColor.AQUA + "[" + ChatColor.BLUE + "Spark" + ChatColor.AQUA + "]" + ChatColor.GRAY
+        e.setFormat(ChatColor.GRAY + "[" + ChatColor.GREEN + pfm.getLevel(p) + ChatColor.GRAY + "]" + "%s" + " " + ChatColor.RESET + "%s");
+//        if (p.getPlayer().getUniqueId().equals(UUID.fromString(mitchell)) || (p.getName().equalsIgnoreCase("Rookie1200")) || (p.getPlayer().getUniqueId().equals(UUID.fromString(corey)) || (p.getName().equalsIgnoreCase("TheManiacGamers")))) {
+//            p.setDisplayName(ChatColor.GRAY + "[" + ChatColor.GREEN + pfm.getLevel(p) + ChatColor.GRAY + "]" + strings.getMessage("ownerPrefix") + p.getName() + ChatColor.RESET); // ChatColor.GOLD + "[" + ChatColor.DARK_RED + "Owner" + ChatColor.GOLD + "]" + ChatColor.RED
+//        } else if (p.getUniqueId().equals(UUID.fromString(tiyahla)) || (p.getName().equalsIgnoreCase("Tiyahla"))) {
+//            p.setDisplayName(ChatColor.GRAY + "[" + ChatColor.GREEN + pfm.getLevel(p) + ChatColor.GRAY + "]" + ChatColor.GOLD + "[" + ChatColor.DARK_RED + "Co-Owner" + ChatColor.GOLD + "]" + ChatColor.RED + p.getName() + ChatColor.RESET); //&6[&4Co-Owner&6]&f
+//        } else {
+//            p.setDisplayName(ChatColor.GRAY + "[" + ChatColor.GREEN + pfm.getLevel(p) + ChatColor.GRAY + "]" + strings.getMessage("sparkPrefix") + p.getName() + ChatColor.RESET); // ChatColor.AQUA + "[" + ChatColor.BLUE + "Spark" + ChatColor.AQUA + "]" + ChatColor.GRAY
+//        }
+        if (e.getMessage().equalsIgnoreCase("pretty please my petite croissant")) {
+            if (Main.parkour_isInParkour.get(p.getUniqueId()).equalsIgnoreCase("yes")) {
+                if (p.hasPermission(perms.plasma_parkour_skip)) {
+                    Main.parkour_playerCheckpoints.put(p.getUniqueId(), "five");
+                    p.teleport(Main.parkour_finish);
+                    p.sendMessage(strings.getMessage("prefix") + ChatColor.GREEN + " Fine, here you go.");
+                    e.setCancelled(true);
+                    return;
+                }
+            }
         }
         if (p.getPlayer().getUniqueId().equals(UUID.fromString(mitchell)) || (p.getPlayer().getUniqueId().equals(UUID.fromString(corey)))) {
             if (e.getMessage().equalsIgnoreCase("yes")) {
@@ -1133,7 +1157,9 @@ public class PlayerListener implements Listener {
                         return;
                     }
                     if (p.getLocation().getBlock().getRelative(BlockFace.DOWN).getType().equals(Material.AIR)) {
-                        if (!(p.getPlayer().getName().equalsIgnoreCase("TheManiacGamers")) || (!(p.getName().equalsIgnoreCase("Rookie1200")))) {
+                        if (p.getName().equalsIgnoreCase("TheManiacGamers") || (p.getName().equalsIgnoreCase("Rookie1200"))) {
+                            TitleAPI.sendActionBar(p, "Bypassing the on-the-floor requirement!");
+                        } else {
                             p.sendMessage(strings.getMessage("snowball_onFloor"));
                             e.setCancelled(true);
                             return;
@@ -1150,6 +1176,15 @@ public class PlayerListener implements Listener {
                         Main.maze_isInMaze.put(p.getUniqueId(), "no");
                         p.sendMessage(strings.getMessage("maze_stop"));
                         Main.canDoubleJump.put(p.getUniqueId(), "yes");
+                    }
+                    if (!p.hasPermission(perms.plasma_snowball_use_infinite)) {
+                        if (p.getLevel() >= 10) {
+                            p.setLevel(p.getLevel() - 10);
+                        } else {
+                            TitleAPI.sendActionBar(p, ChatColor.RED + "You do not have enough money to throw this!");
+                            e.setCancelled(true);
+                            return;
+                        }
                     }
                     ball.setPassenger(p);
                     final int particle = Bukkit.getScheduler().scheduleSyncRepeatingTask(Bukkit.getPluginManager().getPlugin("PlasmaHub"), new Runnable() {
@@ -1212,26 +1247,6 @@ public class PlayerListener implements Listener {
         }
     }
 
-    public void addSnowball(Player p) {
-        ItemStack Snowball = new ItemStack(Material.SNOWBALL, 1);
-        ItemMeta SnowballMeta = Snowball.getItemMeta();
-        SnowballMeta.setDisplayName(com.sk89q.minecraft.util.commands.ChatColor.AQUA + "Flying Snowball!");
-        List<String> lore = new ArrayList<>();
-        lore.add(ChatColor.GREEN + "Throw me and travel along the snowball!");
-        if (!p.hasPermission(perms.plasma_snowball_use)) {
-            lore.add(ChatColor.GREEN + " ");
-            lore.add(ChatColor.AQUA + "Permission: " + ChatColor.RED + "NO");
-            lore.add(ChatColor.GREEN + " ");
-        } else {
-            lore.add(ChatColor.GREEN + " ");
-            lore.add(ChatColor.AQUA + "Permission: " + ChatColor.GREEN + "YES");
-            lore.add(ChatColor.GREEN + " ");
-        }
-        SnowballMeta.setLore(lore);
-        Snowball.setItemMeta(SnowballMeta);
-        p.getInventory().setItem(6, Snowball);
-    }
-
     @EventHandler
     public void onProjectileHit(ProjectileHitEvent e) {
         Projectile proj = e.getEntity();
@@ -1240,7 +1255,7 @@ public class PlayerListener implements Listener {
             ProjectileSource source = ball.getShooter();
             if (source instanceof Player) {
                 Player p = (Player) source;
-                addSnowball(p);
+                api.addSnowball(p);
                 if (p.getItemInHand().getType().equals(Material.SNOWBALL)) {
                     p.teleport(p.getLocation().add(0, 1, 0));
                     ball.remove();

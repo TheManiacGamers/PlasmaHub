@@ -135,6 +135,8 @@ public class API extends BukkitRunnable {
             lore.add(ChatColor.AQUA + "Permission: " + ChatColor.GREEN + "YES");
             lore.add(ChatColor.GREEN + " ");
         }
+        lore.add(ChatColor.RED + "Cost: " + ChatColor.DARK_RED + "$10");
+        lore.add(ChatColor.GREEN + " ");
         SnowballMeta.setLore(lore);
         Snowball.setItemMeta(SnowballMeta);
         p.getInventory().setItem(6, Snowball);

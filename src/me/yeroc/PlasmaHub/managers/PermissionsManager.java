@@ -57,6 +57,7 @@ public class PermissionsManager {
     public String plasma_doublejump_bypass = ("plasma.doublejump.bypass");
 
     public String plasma_snowball_use = ("plasma.snowball.use");
+    public String plasma_snowball_use_infinite = ("plasma.snowball.use.infinite");
 
     public String plasma_music_use = ("plasma.music.use");
     public String plasma_gadgetsmenu_use = ("plasma.gadgetsmenu.use");
@@ -80,6 +81,7 @@ public class PermissionsManager {
 
     // PARKOUR
     public String plasma_parkour_use = ("plasma.parkour.use");
+    public String plasma_parkour_skip = ("plasma.parkour.skip");
 
     // MAZE
     public String plasma_maze_use = ("plasma.maze.use");

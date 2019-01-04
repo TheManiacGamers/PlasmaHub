@@ -271,7 +271,7 @@ public class PlayerFileManager {
         yaml.set("Statistics.Longest_Killstreak", 0);
         yaml.set("Statistics.Current_Deathstreak", 0);
         yaml.set("DailyRewards.Claimed", "no");
-        p.setTotalExperience(p.getExpToLevel() + 100);
+        p.setLevel(p.getLevel() + 100);
         if (Main.pfm_joins.get(p.getUniqueId()) != null) {
             save(p);
             Main.log("[File] Saved loaded information for: " + p.getName());
